@@ -1,0 +1,244 @@
+.navbar {
+  top: 0;
+  padding: 0;
+  width: 10rem;
+  height: 100vh;
+  position: fixed;
+  background-color: var(--primary);
+  transition: width 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  z-index: 99;
+
+  &.toggle {
+    width: 28rem;
+
+    .navbar-item-inner {
+      width: 18rem !important;
+      transition: 1s;
+    }
+
+    .link-text-wrapper {
+      opacity: 1 !important;
+      display: block !important;
+
+      .link-text {
+        width: calc(28rem - 10rem) !important;
+        display: block !important;
+      }
+    }
+
+    .icon-menu-wrapper {
+      opacity: 1 !important;
+      display: block !important;
+    }
+  }
+
+  &:hover {
+    width: 28rem;
+
+    .navbar-item-inner {
+      width: 18rem !important;
+      transition: 1s;
+    }
+
+    .link-text-wrapper {
+      opacity: 1 !important;
+      display: block !important;
+
+      .link-text {
+        width: calc(28rem - 10rem) !important;
+        display: block !important;
+      }
+    }
+
+    .icon-menu-wrapper {
+      opacity: 1 !important;
+      display: block !important;
+    }
+  }
+
+  .navbar-items {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    margin-top: 2rem;
+  }
+
+  /*** Logo ***/
+  .navbar-logo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 8rem;
+    padding: 0.8rem 1.2rem;
+    background-color: rgb(36, 92, 221);
+
+    .navbar-item-inner-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 7.6rem;
+      transition: 0.2s;
+
+      .navbar-logo-img {
+        width: 7.6rem;
+        height: auto;
+        cursor: pointer;
+      }
+    }
+
+    .icon-menu-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: 0.2s;
+      width: 3.2rem;
+      height: 3.2rem;
+      display: none;
+      cursor: pointer;
+      border-radius: 50%;
+
+      &:hover {
+        background-color: rgb(46, 116, 228);
+      }
+
+      .icon-menu {
+        position: absolute;
+        top: 0.3rem;
+        left: 0.3rem;
+        color: var(--white);
+      }
+    }
+  }
+
+  /*** Navbar item ***/
+  .navbar-item {
+    padding: 0 0.5em;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    a {
+      color: var(--white);
+    }
+
+    .navbar-item-inner {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100% !important;
+    }
+
+    .navbar-item-inner-icon-wrapper {
+      width: 8.4rem;
+      display: flex;
+      justify-content: center;
+
+      .navbar-item-inner-icon {
+        font-size: 3.2rem;
+      }
+    }
+
+    .link-text-wrapper {
+      flex: 1 1 auto;
+      opacity: 0;
+      width: 0;
+      transition: 1s;
+
+      .link-text {
+        display: none;
+      }
+    }
+  }
+
+  .profile-wrapper {
+    border-top: 0.02rem solid #ccc;
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+    margin-bottom: 1rem;
+
+    .profile-item {
+      padding: 0 0.5em;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      a {
+        color: var(--white);
+      }
+
+      .profile-item-inner {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100% !important;
+      }
+
+      .profile-item-inner-icon-wrapper {
+        width: 8.4rem;
+        display: flex;
+        justify-content: center;
+
+        .profile-item-inner-icon {
+          font-size: 3.2rem;
+        }
+      }
+
+      .link-text-wrapper {
+        flex: 1 1 auto;
+        opacity: 0;
+        width: 0;
+        transition: 1s;
+
+        .link-text {
+          display: none;
+        }
+      }
+    }
+
+    .avatar-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 4.4rem;
+      height: 4.4rem;
+      border-radius: 50%;
+      background-color: var(--white);
+      overflow: hidden;
+
+      .user-avatar {
+        width: 5rem;
+        height: 5rem;
+        object-fit: contain;
+      }
+    }
+  }
+}

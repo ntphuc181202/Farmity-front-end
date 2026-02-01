@@ -1,0 +1,17 @@
+.password-input-container {
+  position: relative;
+  width: 100%;
+  border-radius: 0.7rem;
+  svg {
+    border: none !important;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 1.6rem;
+    color: #7e868f;
+  }
+}
+
+.password-input-container {
+  border-radius: 0.7rem;
+}

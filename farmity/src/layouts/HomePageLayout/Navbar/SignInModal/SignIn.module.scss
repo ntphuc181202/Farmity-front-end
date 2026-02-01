@@ -1,0 +1,118 @@
+.login-wrapper {
+  background: linear-gradient(rgba(15, 23, 43, 0.5), rgba(123, 125, 131, 0.5)),
+    url(../../../../assets/images/Layout/Navbar/login-background.jpg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 1.2rem;
+  padding: 0 2rem 2rem 2rem;
+  text-align: center;
+  backdrop-filter: blur(0.1rem);
+  -webkit-backdrop-filter: blur(0.2rem);
+  border: 0.1rem solid rgba(255, 255, 255, 0.5);
+}
+
+.login-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .login-logo {
+    width: 26rem;
+  }
+
+  .login-title {
+    position: relative;
+    font-weight: 800;
+    font-size: 3.2rem;
+    text-align: center;
+    display: inline-block;
+    color: var(--text-title-color);
+    margin-bottom: 3.2rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -0.9rem;
+      height: 0.3rem;
+      width: 100%;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, #bfbdcd, #1b4ecf);
+    }
+  }
+
+  .login-icon-close {
+    position: absolute;
+    top: 2rem;
+    right: 0.6rem;
+
+    &::before {
+      position: absolute;
+      display: block;
+      content: '';
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+      z-index: 1;
+    }
+  }
+}
+
+.form-wrapper {
+  .field-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 2.2rem;
+
+    .login-label {
+      display: flex;
+      font-size: 1.8rem;
+      align-items: center;
+      color: var(--text-title-color);
+      font-weight: 600;
+
+      .field-icon {
+        color: var(--white);
+        margin-right: 0.8rem;
+      }
+    }
+
+    .field-input {
+      height: 4.6rem;
+      font-size: 1.6rem;
+    }
+  }
+
+  .login-forget-password {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+
+    :hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.button-login-wrapper {
+  width: 100%;
+
+  .button-login {
+    padding: 0;
+    width: 100%;
+    height: 5rem;
+    border: none;
+    color: var(--text-title-color);
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+}
