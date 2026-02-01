@@ -1,4 +1,4 @@
-import "../styles/download.css";
+import "./download.css";
 
 export default function DownloadPage() {
   return (

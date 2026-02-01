@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/faq.css";
+import "./faq.css";
 
 type FAQItem = { question: string; answer: string };
 type FAQGroup = { title: string; items: FAQItem[] };

@@ -1,4 +1,4 @@
-import "../styles/support.css";
+import "./support.css";
 
 export default function SupportPage() {
   return (
