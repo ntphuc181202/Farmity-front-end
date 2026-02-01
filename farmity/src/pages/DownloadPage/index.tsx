@@ -1,23 +1,23 @@
-import "./download.css";
+import styles from "./download.module.scss";
 
 export default function DownloadPage() {
   return (
-    <div className="download">
-
+    <div className={styles.download}>
       {/* HERO DOWNLOAD */}
-      <section className="download-hero">
+      <section className={styles.downloadHero}>
         <h1>Download The Game</h1>
         <p>Latest version: <strong>v0.1.0 Alpha</strong></p>
-        <button className="download-btn">Download for Windows</button>
-        <p className="build-note">File size: 850MB • Last updated: Jan 2026</p>
+        <button className={styles.downloadBtn}>Download for Windows</button>
+        <p className={styles.buildNote}>
+          File size: 850MB • Last updated: Jan 2026
+        </p>
       </section>
 
       {/* REQUIREMENTS */}
-      <section className="requirements">
+      <section className={styles.requirements}>
         <h2>System Requirements</h2>
-        <div className="req-grid">
-
-          <div className="req-card">
+        <div className={styles.reqGrid}>
+          <div className={styles.reqCard}>
             <h3>Minimum</h3>
             <ul>
               <li>OS: Windows 10</li>
@@ -28,7 +28,7 @@ export default function DownloadPage() {
             </ul>
           </div>
 
-          <div className="req-card recommended">
+          <div className={`${styles.reqCard} ${styles.recommended}`}>
             <h3>Recommended</h3>
             <ul>
               <li>OS: Windows 11</li>
@@ -38,12 +38,11 @@ export default function DownloadPage() {
               <li>Storage: SSD recommended</li>
             </ul>
           </div>
-
         </div>
       </section>
 
       {/* INSTALLATION */}
-      <section className="installation">
+      <section className={styles.installation}>
         <h2>Installation Guide</h2>
         <ol>
           <li>Download the installer file using the button above.</li>
@@ -55,14 +54,13 @@ export default function DownloadPage() {
       </section>
 
       {/* NOTES */}
-      <section className="notes">
+      <section className={styles.notes}>
         <h2>Notes & Troubleshooting</h2>
         <p>
           If the game does not launch, ensure your drivers are updated and
           antivirus software is not blocking the executable.
         </p>
       </section>
-
     </div>
   );
 }

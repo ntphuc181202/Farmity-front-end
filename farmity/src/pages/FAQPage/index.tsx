@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./faq.css";
+import styles from "./FAQPage.module.scss";
 
 type FAQItem = { question: string; answer: string };
 type FAQGroup = { title: string; items: FAQItem[] };
@@ -41,44 +41,45 @@ export default function FAQPage() {
   const [openGroup, setOpenGroup] = useState<number | null>(0);
 
   return (
-    <div className="faq-page">
-      <div className="faq-header">
+    <div className={styles.page}>
+      <div className={styles.header}>
         <h1>Frequently Asked Questions</h1>
         <p>Everything players usually need to know</p>
       </div>
 
-      <div className="faq-container">
-        {faqData.map((group, gIndex) => (
-          <section
-            key={gIndex}
-            className={`faq-group ${openGroup === gIndex ? "open" : ""}`}
-          >
-            <button
-              className="faq-group-title"
-              onClick={() =>
-                setOpenGroup(openGroup === gIndex ? null : gIndex)
-              }
+      <div className={styles.container}>
+        {faqData.map((group, gIndex) => {
+          const isOpen = openGroup === gIndex;
+          return (
+            <section
+              key={gIndex}
+              className={`${styles.group} ${isOpen ? styles.open : ""}`}
             >
-              {group.title}
-              <span className="indicator">
-                {openGroup === gIndex ? "–" : "+"}
-              </span>
-            </button>
+              <button
+                className={styles.groupTitle}
+                onClick={() => setOpenGroup(isOpen ? null : gIndex)}
+              >
+                {group.title}
+                <span className={styles.indicator}>
+                  {isOpen ? "–" : "+"}
+                </span>
+              </button>
 
-            <div className="faq-content">
-              {group.items.map((item, i) => (
-                <div key={i} className="faq-item">
-                  <p className="faq-q">
-                    <span>Q:</span> {item.question}
-                  </p>
-                  <p className="faq-a">
-                    <span>A:</span> {item.answer}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+              <div className={styles.content}>
+                {group.items.map((item, i) => (
+                  <div key={i} className={styles.item}>
+                    <p className={styles.q}>
+                      <span>Q:</span> {item.question}
+                    </p>
+                    <p className={styles.a}>
+                      <span>A:</span> {item.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </div>
   );

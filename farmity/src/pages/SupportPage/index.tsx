@@ -1,15 +1,15 @@
-import "./support.css";
+import styles from "./SupportPage.module.scss";
 
 export default function SupportPage() {
   return (
-    <div className="support-page">
-      <div className="support-header">
+    <div className={styles.page}>
+      <div className={styles.header}>
         <h1>Support & Troubleshooting</h1>
         <p>Need help? Start here before contacting us.</p>
       </div>
 
-      <div className="support-sections">
-        <section className="support-card">
+      <div className={styles.sections}>
+        <section className={styles.card}>
           <h2>Installation Issues</h2>
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Problems
@@ -18,7 +18,7 @@ export default function SupportPage() {
           </p>
         </section>
 
-        <section className="support-card">
+        <section className={styles.card}>
           <h2>Performance Problems</h2>
           <p>
             Reduce graphics settings, close background applications, and make
@@ -26,7 +26,7 @@ export default function SupportPage() {
           </p>
         </section>
 
-        <section className="support-card">
+        <section className={styles.card}>
           <h2>Bug Reports</h2>
           <p>
             If you encounter a bug, please include screenshots and a detailed
