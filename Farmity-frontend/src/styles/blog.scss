@@ -1,0 +1,46 @@
+@media (min-width: 768px) {
+  .blog-page-bg {
+    background-color: #2f97e3;
+    background-image: url("/img/stardewbackground.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top;
+  }
+
+  .blog-article-frame {
+    /* Inner paper background + wood-like border */
+    background:
+      /* paper */
+      linear-gradient(#fdf1b4, #f8e39e) padding-box,
+      /* subtle wood grain */
+      repeating-linear-gradient(
+        -45deg,
+        #8a4a1f,
+        #8a4a1f 4px,
+        #7a3f1a 4px,
+        #7a3f1a 7px
+      ),
+      /* outer highlight/shadow */
+      linear-gradient(to bottom, #c9893b, #5a2a10) border-box;
+    background-origin: padding-box, border-box, border-box;
+    background-clip: padding-box, border-box, border-box;
+    border: 14px solid transparent;
+    border-radius: 18px;
+    box-shadow:
+      0 4px 0 #4b230c,
+      0 0 0 2px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+
+  .blog-article-content {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .blog-article-content iframe,
+  .blog-article-content img {
+    max-width: 100%;
+    display: block;
+  }
+}
+

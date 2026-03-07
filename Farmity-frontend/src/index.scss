@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./styles/blog.scss";
+
+@layer base {
+  body {
+    @apply bg-stardew-bg text-stardew-brown antialiased font-sans;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  @keyframes cloudFloat {
+    from {
+      left: -50px;
+    }
+    to {
+      left: 110%;
+    }
+  }
+
+  .animate-cloud {
+    animation: cloudFloat 80s linear infinite;
+  }
+
+  @keyframes birdFly {
+    0% {
+      left: 50%;
+      opacity: 1;
+    }
+    85% {
+      opacity: 1;
+    }
+    95% {
+      left: -150px;
+      opacity: 0;
+    }
+    100% {
+      left: 50%;
+      opacity: 0;
+    }
+  }
+
+  .animate-bird {
+    animation: birdFly 15s linear infinite;
+  }
+}
+

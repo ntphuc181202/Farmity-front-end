@@ -1,0 +1,27 @@
+import type { Optional } from '@ephox/katamari';
+import type { SugarElement } from '@ephox/sugar';
+
+import type { BehaviourConfigAndState } from '../../behaviour/common/BehaviourBlob';
+import type { UncurriedHandler } from '../../events/EventRegistry';
+import type { AlloyBehaviour } from '../behaviour/Behaviour';
+import type { AlloySystemApi } from '../system/SystemApi';
+
+type ReadonlyRecord<K extends keyof any, T> = {
+  readonly [P in K]: T;
+};
+
+export interface AlloyComponent {
+  readonly uid: string;
+  readonly getSystem: () => AlloySystemApi;
+  readonly config: (behaviour: AlloyBehaviour<any, any>) => Optional<BehaviourConfigAndState<any, any>>;
+  readonly hasConfigured: (behaviour: AlloyBehaviour<any, any>) => boolean;
+  readonly spec: any;
+  readonly readState: (behaviourName: string) => any;
+  readonly connect: (newApi: AlloySystemApi) => void;
+  readonly disconnect: () => void;
+  readonly getApis: <A>() => A;
+  readonly element: SugarElement<any>;
+  readonly syncComponents: () => void;
+  readonly components: () => AlloyComponent[];
+  readonly events: ReadonlyRecord<string, UncurriedHandler>;
+}
