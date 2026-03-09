@@ -18,6 +18,7 @@ import AdminResetPasswordPage from "./pages/admin/auth/AdminResetPasswordPage";
 import NewAdminPage from "./pages/admin/news/NewsAdminPage";
 import MediaAdminPage from "./pages/admin/media/MediaAdminPage";
 import ItemsAdminPage from "./pages/admin/items/ItemsAdminPage";
+import RecipesAdminPage from "./pages/admin/recipes/RecipesAdminPage";
 import MediaPage from "./pages/public/media/MediaPage";
 import MediaDetailPage from "./pages/public/media/MediaDetailPage";
 import NewsPage from "./pages/public/news/NewPage";
@@ -71,6 +72,7 @@ function App() {
           <Route path="news" element={<NewAdminPage />} />
           <Route path="media" element={<MediaAdminPage />} />
           <Route path="items" element={<ItemsAdminPage />} />
+          <Route path="recipes" element={<RecipesAdminPage />} />
         </Route>
       </Routes>
     );
