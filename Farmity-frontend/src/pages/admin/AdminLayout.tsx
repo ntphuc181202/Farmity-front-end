@@ -73,6 +73,18 @@ function AdminLayout() {
             </span>
             <span>Crafting Recipes</span>
           </NavLink>
+          <NavLink to="/admin/plants" className={linkClass}>
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-green-500/10 text-green-400 text-xs font-semibold">
+              P
+            </span>
+            <span>Plants Catalog</span>
+          </NavLink>
+          <NavLink to="/admin/main-menu" className={linkClass}>
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-sky-500/10 text-sky-400 text-xs font-semibold">
+              🖼
+            </span>
+            <span>Main Menu BG</span>
+          </NavLink>
         </nav>
 
         <div className="px-3 py-4 border-t border-slate-800">
@@ -197,6 +209,26 @@ function AdminLayout() {
                     R
                   </span>
                   <span>Crafting Recipes</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/plants"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-green-500/10 text-green-400 text-xs font-semibold">
+                    P
+                  </span>
+                  <span>Plants Catalog</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/main-menu"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-sky-500/10 text-sky-400 text-xs font-semibold">
+                    🖼
+                  </span>
+                  <span>Main Menu BG</span>
                 </NavLink>
               </nav>
               <div className="px-3 py-4 border-t border-slate-800">

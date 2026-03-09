@@ -436,7 +436,7 @@ function AdminItemManager() {
           {visible.map((item) => (
             <div key={item.itemID} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-800/40 transition-colors">
               {item.iconUrl ? (
-                <img src={item.iconUrl} alt={item.itemName} className="w-10 h-10 rounded-md object-cover bg-slate-800 shrink-0" />
+                <img src={item.iconUrl} alt={item.itemName} className="w-10 h-10 rounded-md object-cover bg-slate-800 shrink-0 pixel-art" />
               ) : (
                 <div className="w-10 h-10 rounded-md bg-slate-800 shrink-0" />
               )}
@@ -501,7 +501,7 @@ function AdminItemManager() {
                       <span className="text-sm text-slate-400">{iconFile ? iconFile.name : "Click to select icon image"}</span>
                       <input type="file" accept="image/*" onChange={handleIconPick} className="hidden" />
                     </label>
-                    {iconPreview && <img src={iconPreview} alt="preview" className="w-16 h-16 mt-2 rounded-md object-cover bg-slate-800" />}
+                    {iconPreview && <img src={iconPreview} alt="preview" className="w-16 h-16 mt-2 rounded-md object-cover bg-slate-800 pixel-art" />}
                   </Field>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
