@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { JSX, useState } from "react";
 import {
   Routes,
   Route,
@@ -17,6 +17,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminResetPasswordPage from "./pages/admin/auth/AdminResetPasswordPage";
 import NewAdminPage from "./pages/admin/news/NewsAdminPage";
 import MediaAdminPage from "./pages/admin/media/MediaAdminPage";
+import ItemsAdminPage from "./pages/admin/items/ItemsAdminPage";
 import MediaPage from "./pages/public/media/MediaPage";
 import MediaDetailPage from "./pages/public/media/MediaDetailPage";
 import NewsPage from "./pages/public/news/NewPage";
@@ -69,15 +70,16 @@ function App() {
           <Route path="blog" element={<BlogAdminPage />} />
           <Route path="news" element={<NewAdminPage />} />
           <Route path="media" element={<MediaAdminPage />} />
+          <Route path="items" element={<ItemsAdminPage />} />
         </Route>
       </Routes>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-stardew-bg">
+    <div className="flex flex-col bg-stardew-bg min-h-screen">
       <header className="bg-gradient-to-b from-[#041649] via-[#0a4ea3] to-[#25a5dd] text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        <div className="flex justify-between items-center gap-4 mx-auto px-4 sm:px-6 py-3 max-w-6xl">
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-3 sm:gap-4">
             <NavLink to="/" end className={navLinkClass}>
@@ -94,31 +96,31 @@ function App() {
             </NavLink>
             <a
               href="#"
-              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
+              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
             >
               Forums
             </a>
             <a
               href="#"
-              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
+              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
             >
               Wiki
             </a>
             <a
               href="#"
-              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
+              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
             >
               Merch
             </a>
             <a
               href="#"
-              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
+              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
             >
               FAQ
             </a>
             <a
               href="#"
-              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
+              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
             >
               Tabletop
             </a>
@@ -131,10 +133,10 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
-              className="text-white/90 hover:text-white transition-colors p-1"
+              className="p-1 text-white/90 hover:text-white transition-colors"
             >
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
+                className="w-5 sm:w-6 h-5 sm:h-6"
                 fill="currentColor"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -147,10 +149,10 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="text-white/90 hover:text-white transition-colors p-1"
+              className="p-1 text-white/90 hover:text-white transition-colors"
             >
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
+                className="w-5 sm:w-6 h-5 sm:h-6"
                 fill="currentColor"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -163,10 +165,10 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Reddit"
-              className="text-white/90 hover:text-white transition-colors p-1"
+              className="p-1 text-white/90 hover:text-white transition-colors"
             >
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
+                className="w-5 sm:w-6 h-5 sm:h-6"
                 fill="currentColor"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -177,10 +179,10 @@ function App() {
             <a
               href="mailto:contact@example.com"
               aria-label="Email"
-              className="text-white/90 hover:text-white transition-colors p-1"
+              className="p-1 text-white/90 hover:text-white transition-colors"
             >
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
+                className="w-5 sm:w-6 h-5 sm:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -199,10 +201,10 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Discord"
-              className="text-white/90 hover:text-white transition-colors p-1"
+              className="p-1 text-white/90 hover:text-white transition-colors"
             >
               <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
+                className="w-5 sm:w-6 h-5 sm:h-6"
                 fill="currentColor"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -214,7 +216,7 @@ function App() {
           {/* Mobile menu toggle */}
           <button
             type="button"
-            className="md:hidden ml-auto inline-flex h-9 w-9 items-center justify-center rounded border border-white/50 bg-white/10 text-white text-sm"
+            className="md:hidden inline-flex justify-center items-center bg-white/10 ml-auto border border-white/50 rounded w-9 h-9 text-white text-sm"
             onClick={() => setMobileNavOpen((v) => !v)}
           >
             {mobileNavOpen ? "×" : "☰"}
@@ -222,8 +224,8 @@ function App() {
         </div>
         {/* Mobile nav */}
         {mobileNavOpen && (
-          <div className="md:hidden border-t border-white/20 bg-[#0a4ea3]/80">
-            <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap items-center justify-center gap-2">
+          <div className="md:hidden bg-[#0a4ea3]/80 border-white/20 border-t">
+            <div className="flex flex-wrap justify-center items-center gap-2 mx-auto px-4 py-2 max-w-6xl">
               <NavLink
                 to="/"
                 end
@@ -256,7 +258,7 @@ function App() {
                   <a
                     key={label}
                     href="#"
-                    className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide bg-white/10 text-white/90"
+                    className="bg-white/10 px-3 py-1.5 rounded-full font-bold text-white/90 text-xs uppercase tracking-wide"
                     onClick={() => setMobileNavOpen(false)}
                   >
                     {label}
@@ -280,13 +282,13 @@ function App() {
         </Routes>
       </main>
 
-      <footer className="bg-[#fef6ad] border-t border-stardew-green-dark/40 py-6 px-6 pb-8 text-center">
-        <div className="max-w-[900px] mx-auto">
-          <p className="text-sm text-stardew-brown-soft mb-1">
+      <footer className="bg-[#fef6ad] px-6 py-6 pb-8 border-stardew-green-dark/40 border-t text-center">
+        <div className="mx-auto max-w-[900px]">
+          <p className="mb-1 text-stardew-brown-soft text-sm">
             © {new Date().getFullYear()} Stardewvalley · Inspired by Stardew
             Valley and other farming games.
           </p>
-          <p className="text-xs text-stardew-brown-soft/80">
+          <p className="text-stardew-brown-soft/80 text-xs">
             Stardew Valley © ConcernedApe LLC. This is an unofficial fan page.
           </p>
         </div>
