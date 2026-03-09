@@ -108,7 +108,7 @@ function ItemPicker({
       >
         {selected ? (
           <>
-            {selected.iconUrl && <img src={selected.iconUrl} alt="" className="w-5 h-5 rounded object-cover shrink-0" />}
+            {selected.iconUrl && <img src={selected.iconUrl} alt="" className="w-5 h-5 rounded object-cover shrink-0 pixel-art" />}
             <span className="truncate flex-1">{selected.itemName}</span>
             <span className="text-xs text-slate-500 shrink-0">{selected.itemID}</span>
           </>
@@ -152,7 +152,7 @@ function ItemPicker({
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-800 transition-colors ${item.itemID === value ? "bg-emerald-500/10 text-emerald-300" : "text-slate-50"}`}
               >
                 {item.iconUrl ? (
-                  <img src={item.iconUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0 bg-slate-800" />
+                  <img src={item.iconUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0 bg-slate-800 pixel-art" />
                 ) : (
                   <div className="w-6 h-6 rounded bg-slate-800 shrink-0" />
                 )}
@@ -394,7 +394,7 @@ function AdminRecipeManager() {
               <div key={recipe.recipeID} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-800/40 transition-colors">
                 {/* Result item icon instead of category badge */}
                 {resultItem?.iconUrl ? (
-                  <img src={resultItem.iconUrl} alt={resultItem.itemName} className="w-10 h-10 rounded-md object-cover bg-slate-800 shrink-0" />
+                  <img src={resultItem.iconUrl} alt={resultItem.itemName} className="w-10 h-10 rounded-md object-cover bg-slate-800 shrink-0 pixel-art" />
                 ) : (
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-violet-500/10 text-violet-400 text-xs font-bold shrink-0">
                     {CATEGORY_LABELS[recipe.category]?.slice(0, 3).toUpperCase() ?? "GEN"}

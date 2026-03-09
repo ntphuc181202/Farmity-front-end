@@ -4,6 +4,13 @@
 
 @import "./styles/blog.scss";
 
+/* Pixel-perfect rendering for game asset images (16×16 pixel art) */
+.pixel-art,
+img.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* Firefox fallback */
+}
+
 @layer base {
   body {
     @apply bg-stardew-bg text-stardew-brown antialiased font-sans;
