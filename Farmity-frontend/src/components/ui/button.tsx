@@ -23,7 +23,7 @@ export function Button({
   const variants: Record<ButtonVariant, string> = {
     default: "bg-emerald-600 text-white hover:bg-emerald-700",
     outline:
-      "border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800",
+      "border border-slate-600 bg-transparent text-slate-100 hover:bg-slate-800 hover:text-white",
     ghost:
       "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800",
     destructive: "bg-red-500 text-white hover:bg-red-600",
