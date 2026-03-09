@@ -61,6 +61,12 @@ function AdminLayout() {
             </span>
             <span>Media Management</span>
           </NavLink>
+          <NavLink to="/admin/items" className={linkClass}>
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/10 text-amber-400 text-xs font-semibold">
+              I
+            </span>
+            <span>Items Catalog</span>
+          </NavLink>
         </nav>
 
         <div className="px-3 py-4 border-t border-slate-800">
@@ -154,6 +160,27 @@ function AdminLayout() {
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-semibold">
                     N
                   </span>
+                  <span>News</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/media"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-semibold">
+                    M
+                  </span>
+                  <span>Media</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/items"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/10 text-amber-400 text-xs font-semibold">
+                    I
+                  </span>
+                  <span>Items Catalog</span>
                 </NavLink>
               </nav>
               <div className="px-3 py-4 border-t border-slate-800">
