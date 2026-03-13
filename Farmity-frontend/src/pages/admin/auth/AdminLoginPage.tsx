@@ -45,7 +45,7 @@ function AdminLoginPage() {
             userId: data.userId,
             username: data.username,
             access_token: data.access_token,
-          })
+          }),
         );
 
         localStorage.setItem("isAdminLoggedIn", "true");
@@ -87,7 +87,7 @@ function AdminLoginPage() {
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="Username"
                   autoComplete="username"
                 />
               </div>

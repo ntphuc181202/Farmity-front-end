@@ -25,6 +25,10 @@ import MediaPage from "./pages/public/media/MediaPage";
 import MediaDetailPage from "./pages/public/media/MediaDetailPage";
 import NewsPage from "./pages/public/news/NewPage";
 import NewsDetailPage from "./pages/public/news/NewDetalPage";
+import FAQPage from "./pages/public/faq/FAQPage";
+import TroubleshootingPage from "./pages/public/troubleshooting/TroubleshootingPage";
+import ContactSupportPage from "./pages/public/support/ContactSupportPage";
+import DownloadPage from "./pages/public/dowload/DownloadPage";
 
 type RequireAdminProps = {
   children: JSX.Element;
@@ -100,35 +104,20 @@ function App() {
             <NavLink to="/media" className={navLinkClass}>
               Media
             </NavLink>
+            <NavLink to="/faq" className={navLinkClass}>
+              FAQ
+            </NavLink>
+            <NavLink to="/contact-support" className={navLinkClass}>
+              Contact & Support
+            </NavLink>
+            <NavLink to="/download" className={navLinkClass}>
+              Dowload
+            </NavLink>
             <a
               href="#"
-              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
-            >
-              Forums
-            </a>
-            <a
-              href="#"
-              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
+              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
             >
               Wiki
-            </a>
-            <a
-              href="#"
-              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
-            >
-              Merch
-            </a>
-            <a
-              href="#"
-              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
-            >
-              FAQ
-            </a>
-            <a
-              href="#"
-              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
-            >
-              Tabletop
             </a>
           </nav>
           {/* Right social icons (desktop only for spacing) */}
@@ -285,6 +274,10 @@ function App() {
           <Route path="/media/:id" element={<MediaDetailPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:id" element={<NewsDetailPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/troubleshooting" element={<TroubleshootingPage />} />
+          <Route path="/contact-support" element={<ContactSupportPage />} />
+          <Route path="/download" element={<DownloadPage />} />
         </Routes>
       </main>
 

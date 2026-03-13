@@ -28,9 +28,14 @@ function AdminNewsManager() {
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [publishDate, setPublishDate] = useState("");
   const [thumbnailPreview, setThumbnailPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
   const pageSize = 8;
 
   const resetForm = () => {
+    if (thumbnailPreview) {
+      URL.revokeObjectURL(thumbnailPreview);
+    }
+
     setTitle("");
     setContent("");
     setThumbnailUrl("");
@@ -57,6 +62,11 @@ function AdminNewsManager() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    if (uploading) {
+      Swal.fire("Uploading", "Please wait until upload finishes", "info");
+      return;
+    }
+
     if (!title.trim() || !content.trim()) {
       setMessage("Please fill in the title and content.");
       return;
@@ -82,8 +92,6 @@ function AdminNewsManager() {
           position: "top-end",
           showConfirmButton: false,
           timer: 2000,
-          background: "#020617",
-          color: "#e5e7eb",
         });
       } else {
         await newsApi.createNews(payload);
@@ -95,8 +103,6 @@ function AdminNewsManager() {
           position: "top-end",
           showConfirmButton: false,
           timer: 2000,
-          background: "#020617",
-          color: "#e5e7eb",
         });
       }
 
@@ -105,7 +111,7 @@ function AdminNewsManager() {
       await fetchNews();
     } catch (error) {
       console.error("Failed to publish news:", error);
-      setMessage("Failed to publish news.");
+      Swal.fire("Error", "Failed to publish news", "error");
     } finally {
       setLoading(false);
     }
@@ -114,7 +120,10 @@ function AdminNewsManager() {
   const handleEdit = (item: NewsItem) => {
     setTitle(item.title || "");
     setContent(item.content || "");
+
     setThumbnailUrl(item.thumbnailUrl || "");
+    setThumbnailPreview(item.thumbnailUrl || ""); // 👈 thêm dòng này
+
     setPublishDate(item.publishDate ? item.publishDate.slice(0, 10) : "");
 
     setEditingId(item._id || item.id || null);
@@ -127,7 +136,8 @@ function AdminNewsManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // preview ngay
+    setUploading(true);
+
     const preview = URL.createObjectURL(file);
     setThumbnailPreview(preview);
 
@@ -155,9 +165,12 @@ function AdminNewsManager() {
 
       const result = await uploadRes.json();
 
-      setThumbnailUrl(result.secure_url);
+      setThumbnailUrl(result.secure_url); // ảnh mới
     } catch (err) {
       console.error("Upload thumbnail failed", err);
+      Swal.fire("Error", "Upload thumbnail failed", "error");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -295,10 +308,18 @@ function AdminNewsManager() {
                 </label>
 
                 {(thumbnailPreview || thumbnailUrl) && (
-                  <img
-                    src={thumbnailPreview || thumbnailUrl}
-                    className="w-full max-w-xs h-36 object-cover rounded-lg"
-                  />
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={thumbnailPreview || thumbnailUrl}
+                      className="w-full max-w-xs h-36 object-cover rounded-lg"
+                    />
+
+                    {uploading && (
+                      <span className="text-xs text-slate-400">
+                        Uploading...
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 <Input
@@ -384,22 +405,25 @@ function AdminNewsManager() {
                     }}
                   />
                 </div>
+                {/* STICKY FOOTER */}
+                <div className="border-t border-slate-800 p-4 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button type="submit" disabled={loading || uploading}>
+                    {uploading
+                      ? "Uploading..."
+                      : editingId
+                        ? "Save changes"
+                        : "Create news"}
+                  </Button>
+                </div>
               </form>
-            </div>
-
-            {/* STICKY FOOTER */}
-            <div className="border-t border-slate-800 p-4 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </Button>
-
-              <Button onClick={handleSubmit}>
-                {editingId ? "Save changes" : "Create news"}
-              </Button>
             </div>
           </Card>
         </div>

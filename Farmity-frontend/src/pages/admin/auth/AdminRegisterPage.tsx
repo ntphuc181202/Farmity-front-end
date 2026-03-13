@@ -100,7 +100,7 @@ function AdminRegisterPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="username"
                   autoComplete="email"
                 />
               </div>
@@ -149,4 +149,3 @@ function AdminRegisterPage() {
 }
 
 export default AdminRegisterPage;
-

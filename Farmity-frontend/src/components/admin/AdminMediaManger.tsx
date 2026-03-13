@@ -156,11 +156,9 @@ function AdminMediaManager() {
     setMedia((prev) => prev.filter((m) => (m._id || m.id) !== id));
   };
 
-  const filteredMedia = media.filter((m) => {
-    const term = search.toLowerCase();
-    const desc = (m.description || "").toLowerCase();
-    return desc.includes(term);
-  });
+  const filteredMedia = media.filter((m) =>
+    (m.description || "").toLowerCase().includes(search.toLowerCase()),
+  );
 
   const totalPages = Math.max(1, Math.ceil(filteredMedia.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -240,17 +238,17 @@ function AdminMediaManager() {
         </CardContent>
       </Card>
 
-      {/* MODAL */}
-
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
-          <Card className="w-full max-w-2xl bg-slate-950 border border-slate-800 flex flex-col max-h-[90vh]">
-            <CardHeader className="border-b border-slate-800">
-              <CardTitle>{editingId ? "Edit media" : "Create media"}</CardTitle>
-            </CardHeader>
+          <Card className="w-full max-w-2xl bg-slate-950 border border-slate-800">
+            <form onSubmit={handleSubmit} className="flex flex-col max-h-[90vh]">
+              <CardHeader className="border-b border-slate-800">
+                <CardTitle>
+                  {editingId ? "Edit media" : "Create media"}
+                </CardTitle>
+              </CardHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 <label className="flex items-center justify-center w-full h-28 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-slate-500 bg-slate-900">
                   <span className="text-sm text-slate-400">
                     Click to upload image
@@ -282,22 +280,22 @@ function AdminMediaManager() {
                   value={uploadDate}
                   onChange={(e) => setUploadDate(e.target.value)}
                 />
-              </form>
-            </div>
+              </div>
 
-            <div className="border-t border-slate-800 p-4 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </Button>
+              <div className="border-t border-slate-800 p-4 flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </Button>
 
-              <Button onClick={handleSubmit}>
-                {editingId ? "Save changes" : "Create media"}
-              </Button>
-            </div>
+                <Button type="submit">
+                  {editingId ? "Save changes" : "Create media"}
+                </Button>
+              </div>
+            </form>
           </Card>
         </div>
       )}
