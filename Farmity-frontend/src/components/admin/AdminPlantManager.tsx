@@ -15,7 +15,7 @@ const SEASON_LABELS: Record<number, string> = { 0: "Sunny", 1: "Rainy" };
 
 interface GrowthStage {
   stageNum: number;
-  age: number;
+  growthDurationMinutes: number;
   stageIconUrl?: string;
 }
 
@@ -47,7 +47,7 @@ interface CatalogItem {
 const EMPTY: PlantDoc = {
   plantId: "",
   plantName: "",
-  growthStages: [{ stageNum: 0, age: 0 }],
+  growthStages: [{ stageNum: 0, growthDurationMinutes: 0 }],
   harvestedItemId: "",
   canProducePollen: false,
   pollenStage: 3,
@@ -98,33 +98,33 @@ function ItemPicker({
       <button
         type="button"
         onClick={() => { setOpen((v) => !v); setQuery(""); }}
-        className="flex h-9 w-full items-center gap-2 rounded-md border border-slate-700 bg-slate-900 px-3 text-sm text-slate-50 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 hover:border-slate-500 transition-colors"
+        className="flex items-center gap-2 bg-slate-900 px-3 border border-slate-700 hover:border-slate-500 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm text-left transition-colors"
       >
         {selected ? (
           <>
-            {selected.iconUrl && <img src={selected.iconUrl} alt="" className="w-5 h-5 rounded object-cover shrink-0 pixel-art" />}
-            <span className="truncate flex-1">{selected.itemName}</span>
-            <span className="text-xs text-slate-500 shrink-0">{selected.itemID}</span>
+            {selected.iconUrl && <img src={selected.iconUrl} alt="" className="rounded w-5 h-5 object-cover shrink-0 pixel-art" />}
+            <span className="flex-1 truncate">{selected.itemName}</span>
+            <span className="text-slate-500 text-xs shrink-0">{selected.itemID}</span>
           </>
         ) : (
-          <span className="text-slate-500 flex-1">{placeholder}</span>
+          <span className="flex-1 text-slate-500">{placeholder}</span>
         )}
-        <span className="text-slate-500 text-xs ml-1">▾</span>
+        <span className="ml-1 text-slate-500 text-xs">▾</span>
       </button>
 
       {open && (
-        <div className="absolute z-[60] mt-1 w-full max-h-60 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl flex flex-col">
-          <div className="p-2 border-b border-slate-800">
-            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="w-full rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-sm text-slate-50 placeholder:text-slate-500 focus:outline-none" />
+        <div className="z-[60] absolute flex flex-col bg-slate-900 shadow-xl mt-1 border border-slate-700 rounded-lg w-full max-h-60 overflow-hidden">
+          <div className="p-2 border-slate-800 border-b">
+            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="bg-slate-800 px-2.5 py-1.5 border border-slate-700 rounded-md focus:outline-none w-full text-slate-50 placeholder:text-slate-500 text-sm" />
           </div>
           <div className="flex-1 overflow-y-auto">
-            <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 transition-colors">— None —</button>
-            {filtered.length === 0 && <p className="text-slate-500 text-xs text-center py-3">No items match.</p>}
+            <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="flex items-center gap-2 hover:bg-slate-800 px-3 py-2 w-full text-slate-400 text-sm transition-colors">— None —</button>
+            {filtered.length === 0 && <p className="py-3 text-slate-500 text-xs text-center">No items match.</p>}
             {filtered.map((item) => (
               <button key={item.itemID} type="button" onClick={() => { onChange(item.itemID); setOpen(false); }} className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-800 transition-colors ${item.itemID === value ? "bg-emerald-500/10 text-emerald-300" : "text-slate-50"}`}>
-                {item.iconUrl ? <img src={item.iconUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0 bg-slate-800 pixel-art" /> : <div className="w-6 h-6 rounded bg-slate-800 shrink-0" />}
-                <span className="truncate flex-1 text-left">{item.itemName}</span>
-                <span className="text-xs text-slate-500 shrink-0">{item.itemID}</span>
+                {item.iconUrl ? <img src={item.iconUrl} alt="" className="bg-slate-800 rounded w-6 h-6 object-cover shrink-0 pixel-art" /> : <div className="bg-slate-800 rounded w-6 h-6 shrink-0" />}
+                <span className="flex-1 text-left truncate">{item.itemName}</span>
+                <span className="text-slate-500 text-xs shrink-0">{item.itemID}</span>
               </button>
             ))}
           </div>
@@ -142,12 +142,14 @@ function AdminPlantManager() {
   const [plants, setPlants] = useState<PlantDoc[]>([]);
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [search, setSearch] = useState("");
+  const [seasonFilter, setSeasonFilter] = useState("all");
+  const [hybridFilter, setHybridFilter] = useState("all");
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlantId, setEditingPlantId] = useState<string | null>(null);
-  const [form, setForm] = useState<PlantDoc>({ ...EMPTY, growthStages: [{ stageNum: 0, age: 0 }] });
+  const [form, setForm] = useState<PlantDoc>({ ...EMPTY, growthStages: [{ stageNum: 0, growthDurationMinutes: 0 }] });
   const [stageFiles, setStageFiles] = useState<(File | null)[]>([null]);
   const [hybridFlowerFile, setHybridFlowerFile] = useState<File | null>(null);
   const [hybridMatureFile, setHybridMatureFile] = useState<File | null>(null);
@@ -181,7 +183,7 @@ function AdminPlantManager() {
 
   /* ── helpers ── */
   const resetForm = () => {
-    setForm({ ...EMPTY, growthStages: [{ stageNum: 0, age: 0 }] });
+    setForm({ ...EMPTY, growthStages: [{ stageNum: 0, growthDurationMinutes: 0 }] });
     setStageFiles([null]);
     setHybridFlowerFile(null);
     setHybridMatureFile(null);
@@ -191,7 +193,7 @@ function AdminPlantManager() {
   const openCreate = () => { resetForm(); setIsModalOpen(true); };
 
   const openEdit = (plant: PlantDoc) => {
-    setForm({ ...plant, growthStages: plant.growthStages?.map((s) => ({ ...s })) || [{ stageNum: 0, age: 0 }] });
+    setForm({ ...plant, growthStages: plant.growthStages?.map((s) => ({ ...s })) || [{ stageNum: 0, growthDurationMinutes: 0 }] });
     setStageFiles(new Array(plant.growthStages?.length || 1).fill(null));
     setHybridFlowerFile(null);
     setHybridMatureFile(null);
@@ -213,7 +215,7 @@ function AdminPlantManager() {
   const addStage = () => {
     setForm((prev) => {
       const newNum = prev.growthStages.length;
-      return { ...prev, growthStages: [...prev.growthStages, { stageNum: newNum, age: 0 }] };
+      return { ...prev, growthStages: [...prev.growthStages, { stageNum: newNum, growthDurationMinutes: 0 }] };
     });
     setStageFiles((prev) => [...prev, null]);
   };
@@ -226,10 +228,10 @@ function AdminPlantManager() {
     setStageFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const setStageAge = (idx: number, val: string) => {
+  const setStageDuration = (idx: number, val: string) => {
     setForm((prev) => {
       const stages = [...prev.growthStages];
-      stages[idx] = { ...stages[idx], age: Number(val) || 0 };
+      stages[idx] = { ...stages[idx], growthDurationMinutes: Number(val) || 0 };
       return { ...prev, growthStages: stages };
     });
   };
@@ -263,7 +265,14 @@ function AdminPlantManager() {
     }
 
     // growthStages as JSON string
-    const stagesJson = form.growthStages.map((s) => ({ stageNum: s.stageNum, age: s.age }));
+    // On update without new sprites, include existing stageIconUrl (Mongoose requires it)
+    const stagesJson = form.growthStages.map((s, idx) => {
+      const entry: Record<string, unknown> = { stageNum: s.stageNum, growthDurationMinutes: s.growthDurationMinutes };
+      if (editingPlantId && !stageFiles[idx] && s.stageIconUrl) {
+        entry.stageIconUrl = s.stageIconUrl;
+      }
+      return entry;
+    });
     fd.append("growthStages", JSON.stringify(stagesJson));
 
     // stage sprite files — filenames must end with _<stageIndex>
@@ -351,7 +360,12 @@ function AdminPlantManager() {
   /* ── filter + paginate ── */
   const filtered = plants.filter((p) => {
     const t = search.toLowerCase();
-    return p.plantId.toLowerCase().includes(t) || p.plantName.toLowerCase().includes(t);
+    const matchText = p.plantId.toLowerCase().includes(t) || p.plantName.toLowerCase().includes(t);
+    const matchSeason = seasonFilter === "all" || String(p.growingSeason) === seasonFilter;
+    const matchHybrid =
+      hybridFilter === "all" ||
+      (hybridFilter === "yes" ? p.isHybrid : !p.isHybrid);
+    return matchText && matchSeason && matchHybrid;
   });
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -364,8 +378,8 @@ function AdminPlantManager() {
     <div className="space-y-6">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Plants Catalog</h1>
-          <p className="text-sm text-slate-400 mt-0.5">{plants.length} plants total</p>
+          <h1 className="font-semibold text-white text-2xl">Plants Catalog</h1>
+          <p className="mt-0.5 text-slate-400 text-sm">{plants.length} plants total</p>
         </div>
         <Button onClick={openCreate}>+ New Plant</Button>
       </header>
@@ -373,23 +387,49 @@ function AdminPlantManager() {
       {/* List */}
       <Card>
         <CardHeader>
-          <Input placeholder="Search by ID or name…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          <div className="flex flex-wrap gap-3">
+            <Input
+              placeholder="Search by ID or name…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="flex-1 min-w-[180px]"
+            />
+            <select
+              value={seasonFilter}
+              onChange={(e) => { setSeasonFilter(e.target.value); setPage(1); }}
+              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
+            >
+              <option value="all">All Seasons</option>
+              {Object.entries(SEASON_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <select
+              value={hybridFilter}
+              onChange={(e) => { setHybridFilter(e.target.value); setPage(1); }}
+              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
+            >
+              <option value="all">All Plants</option>
+              <option value="yes">Hybrid Only</option>
+              <option value="no">Non-Hybrid Only</option>
+            </select>
+          </div>
         </CardHeader>
         <CardContent className="divide-y divide-slate-800">
-          {visible.length === 0 && <p className="text-slate-500 text-sm text-center py-8">No plants found.</p>}
+          {visible.length === 0 && <p className="py-8 text-slate-500 text-sm text-center">No plants found.</p>}
           {visible.map((plant) => {
             const harvestItem = itemMap.get(plant.harvestedItemId);
             const firstStageIcon = plant.growthStages?.[0]?.stageIconUrl;
             return (
-              <div key={plant.plantId} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-800/40 transition-colors">
+              <div key={plant.plantId} className="flex items-center gap-4 hover:bg-slate-800/40 px-6 py-3 transition-colors">
                 {firstStageIcon ? (
-                  <img src={firstStageIcon} alt={plant.plantName} className="w-10 h-10 rounded-md object-cover bg-slate-800 shrink-0 pixel-art" />
+                  <img src={firstStageIcon} alt={plant.plantName} className="bg-slate-800 rounded-md w-10 h-10 object-cover shrink-0 pixel-art" />
                 ) : (
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-green-500/10 text-green-400 text-xs font-bold shrink-0">🌱</span>
+                  <span className="inline-flex justify-center items-center bg-green-500/10 rounded-md w-10 h-10 font-bold text-green-400 text-xs shrink-0">🌱</span>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium truncate">{plant.plantName}</p>
-                  <p className="text-xs text-slate-400 truncate">
+                  <p className="font-medium text-white truncate">{plant.plantName}</p>
+                  <p className="text-slate-400 text-xs truncate">
                     {plant.plantId} · {plant.growthStages?.length ?? 0} stages · {SEASON_LABELS[plant.growingSeason] ?? "Sunny"} · Harvest → {harvestItem?.itemName || plant.harvestedItemId}
                     {plant.isHybrid && <span className="ml-1 text-amber-400">(Hybrid)</span>}
                   </p>
@@ -408,26 +448,26 @@ function AdminPlantManager() {
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2">
           <Button size="sm" variant="outline" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>Prev</Button>
-          <span className="text-sm text-slate-400">{currentPage} / {totalPages}</span>
+          <span className="text-slate-400 text-sm">{currentPage} / {totalPages}</span>
           <Button size="sm" variant="outline" disabled={currentPage >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
         </div>
       )}
 
       {/* ═══════  Modal  ═══════ */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto">
-          <Card className="w-full max-w-3xl bg-slate-950 border border-slate-800 flex flex-col my-8">
-            <CardHeader className="border-b border-slate-800 shrink-0">
+        <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
+          <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
+            <CardHeader className="border-slate-800 border-b shrink-0">
               <CardTitle>{editingPlantId ? `Edit — ${editingPlantId}` : "Create New Plant"}</CardTitle>
             </CardHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
 
                 {/* ─── Basic Info ─── */}
                 <section className="space-y-3">
-                  <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Plant Info</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">Plant Info</h3>
+                  <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                     <Field label="Plant ID *">
                       <Input value={form.plantId} onChange={(e) => set("plantId", e.target.value)} placeholder="e.g. plant_corn" disabled={!!editingPlantId} />
                     </Field>
@@ -436,7 +476,7 @@ function AdminPlantManager() {
                     </Field>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                     <Field label="Harvested Item *">
                       <ItemPicker items={catalogItems} value={form.harvestedItemId} onChange={(id) => set("harvestedItemId", id)} placeholder="Select harvested item…" />
                     </Field>
@@ -444,7 +484,7 @@ function AdminPlantManager() {
                       <select
                         value={form.growingSeason}
                         onChange={(e) => set("growingSeason", Number(e.target.value))}
-                        className="flex h-9 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                        className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {Object.entries(SEASON_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                       </select>
@@ -458,11 +498,11 @@ function AdminPlantManager() {
                 </section>
 
                 {/* ─── Pollen Settings ─── */}
-                <section className="space-y-3 pt-2 border-t border-slate-800">
-                  <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider">Pollen Settings</h3>
+                <section className="space-y-3 pt-2 border-slate-800 border-t">
+                  <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">Pollen Settings</h3>
                   <Toggle label="Can Produce Pollen" checked={form.canProducePollen} onChange={(c) => setBool("canProducePollen", c)} />
                   {form.canProducePollen && (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
                       <Field label="Pollen Stage">
                         <Input type="number" value={form.pollenStage} onChange={(e) => setNum("pollenStage", e.target.value)} min={0} />
                       </Field>
@@ -478,9 +518,9 @@ function AdminPlantManager() {
 
                 {/* ─── Hybrid Fields ─── */}
                 {form.isHybrid && (
-                  <section className="space-y-3 pt-2 border-t border-slate-800">
-                    <h3 className="text-sm font-semibold text-pink-400 uppercase tracking-wider">Hybrid Settings</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <section className="space-y-3 pt-2 border-slate-800 border-t">
+                    <h3 className="font-semibold text-pink-400 text-sm uppercase tracking-wider">Hybrid Settings</h3>
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                       <Field label="Receiver Plant ID">
                         <Input value={form.receiverPlantId} onChange={(e) => set("receiverPlantId", e.target.value)} placeholder="e.g. plant_tomato" />
                       </Field>
@@ -488,59 +528,59 @@ function AdminPlantManager() {
                         <Input value={form.pollenPlantId} onChange={(e) => set("pollenPlantId", e.target.value)} placeholder="e.g. plant_corn" />
                       </Field>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                       <Field label={editingPlantId ? "Hybrid Flower Sprite (optional)" : "Hybrid Flower Sprite"}>
-                        <label className="flex items-center justify-center w-full h-16 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-slate-500 transition bg-slate-900">
-                          <span className="text-sm text-slate-400">{hybridFlowerFile ? hybridFlowerFile.name : "Click to select"}</span>
+                        <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-16 transition cursor-pointer">
+                          <span className="text-slate-400 text-sm">{hybridFlowerFile ? hybridFlowerFile.name : "Click to select"}</span>
                           <input type="file" accept="image/*" onChange={(e) => setHybridFlowerFile(e.target.files?.[0] || null)} className="hidden" />
                         </label>
-                        {(form.hybridFlowerIconUrl && !hybridFlowerFile) && <img src={form.hybridFlowerIconUrl} alt="flower" className="w-12 h-12 mt-1 rounded object-cover bg-slate-800 pixel-art" />}
+                        {(form.hybridFlowerIconUrl && !hybridFlowerFile) && <img src={form.hybridFlowerIconUrl} alt="flower" className="bg-slate-800 mt-1 rounded w-12 h-12 object-cover pixel-art" />}
                       </Field>
                       <Field label={editingPlantId ? "Hybrid Mature Sprite (optional)" : "Hybrid Mature Sprite"}>
-                        <label className="flex items-center justify-center w-full h-16 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-slate-500 transition bg-slate-900">
-                          <span className="text-sm text-slate-400">{hybridMatureFile ? hybridMatureFile.name : "Click to select"}</span>
+                        <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-16 transition cursor-pointer">
+                          <span className="text-slate-400 text-sm">{hybridMatureFile ? hybridMatureFile.name : "Click to select"}</span>
                           <input type="file" accept="image/*" onChange={(e) => setHybridMatureFile(e.target.files?.[0] || null)} className="hidden" />
                         </label>
-                        {(form.hybridMatureIconUrl && !hybridMatureFile) && <img src={form.hybridMatureIconUrl} alt="mature" className="w-12 h-12 mt-1 rounded object-cover bg-slate-800 pixel-art" />}
+                        {(form.hybridMatureIconUrl && !hybridMatureFile) && <img src={form.hybridMatureIconUrl} alt="mature" className="bg-slate-800 mt-1 rounded w-12 h-12 object-cover pixel-art" />}
                       </Field>
                     </div>
                   </section>
                 )}
 
                 {/* ─── Growth Stages ─── */}
-                <section className="space-y-3 pt-2 border-t border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-cyan-400 uppercase tracking-wider">Growth Stages</h3>
+                <section className="space-y-3 pt-2 border-slate-800 border-t">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-cyan-400 text-sm uppercase tracking-wider">Growth Stages</h3>
                     <Button type="button" size="sm" variant="outline" onClick={addStage}>+ Add Stage</Button>
                   </div>
 
                   {form.growthStages.map((stage, idx) => (
-                    <div key={idx} className="flex gap-2 items-center p-3 bg-slate-900/50 rounded-lg">
-                      <span className="text-xs text-slate-500 font-mono w-6 shrink-0">#{stage.stageNum}</span>
+                    <div key={idx} className="flex items-center gap-2 bg-slate-900/50 p-3 rounded-lg">
+                      <span className="w-6 font-mono text-slate-500 text-xs shrink-0">#{stage.stageNum}</span>
 
                       {/* Existing icon preview */}
                       {stage.stageIconUrl && !stageFiles[idx] && (
-                        <img src={stage.stageIconUrl} alt={`Stage ${stage.stageNum}`} className="w-10 h-10 rounded object-cover bg-slate-800 shrink-0 pixel-art" />
+                        <img src={stage.stageIconUrl} alt={`Stage ${stage.stageNum}`} className="bg-slate-800 rounded w-10 h-10 object-cover shrink-0 pixel-art" />
                       )}
 
                       {/* File preview */}
                       {stageFiles[idx] && (
-                        <img src={URL.createObjectURL(stageFiles[idx]!)} alt={`Stage ${stage.stageNum}`} className="w-10 h-10 rounded object-cover bg-slate-800 shrink-0 pixel-art" />
+                        <img src={URL.createObjectURL(stageFiles[idx]!)} alt={`Stage ${stage.stageNum}`} className="bg-slate-800 rounded w-10 h-10 object-cover shrink-0 pixel-art" />
                       )}
 
-                      <Field label="Age (days)">
-                        <Input type="number" value={stage.age} onChange={(e) => setStageAge(idx, e.target.value)} min={0} className="w-24" />
+                      <Field label="Duration (min)">
+                        <Input type="number" value={stage.growthDurationMinutes} onChange={(e) => setStageDuration(idx, e.target.value)} min={0} className="w-24" />
                       </Field>
 
                       <Field label={editingPlantId ? "Sprite (optional)" : "Sprite *"}>
-                        <label className="flex items-center justify-center h-9 px-3 border border-dashed border-slate-700 rounded-md cursor-pointer hover:border-slate-500 transition bg-slate-900 text-xs text-slate-400 whitespace-nowrap">
+                        <label className="flex justify-center items-center bg-slate-900 px-3 border border-slate-700 hover:border-slate-500 border-dashed rounded-md h-9 text-slate-400 text-xs whitespace-nowrap transition cursor-pointer">
                           {stageFiles[idx] ? stageFiles[idx]!.name : "Choose file"}
                           <input type="file" accept="image/*" onChange={(e) => setStageFile(idx, e.target.files?.[0] || null)} className="hidden" />
                         </label>
                       </Field>
 
                       {form.growthStages.length > 1 && (
-                        <Button type="button" size="icon" variant="destructive" className="h-8 w-8 shrink-0" onClick={() => removeStage(idx)}>×</Button>
+                        <Button type="button" size="icon" variant="destructive" className="w-8 h-8 shrink-0" onClick={() => removeStage(idx)}>×</Button>
                       )}
                     </div>
                   ))}
@@ -550,7 +590,7 @@ function AdminPlantManager() {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-slate-800 p-4 flex justify-end gap-2 shrink-0">
+            <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? "Saving…" : editingPlantId ? "Save Changes" : "Create Plant"}
@@ -576,8 +616,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (c: boolean) => void }) {
   return (
-    <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer select-none">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-emerald-500 w-4 h-4 rounded" />
+    <label className="flex items-center gap-2 text-slate-300 text-sm cursor-pointer select-none">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="rounded w-4 h-4 accent-emerald-500" />
       {label}
     </label>
   );
