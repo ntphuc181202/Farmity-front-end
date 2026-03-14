@@ -86,6 +86,7 @@ function App() {
           <Route path="main-menu" element={<MainMenuConfigPage />} />
           <Route path="skin-configs" element={<SkinConfigPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
+          <Route path="resource-configs" element={<ResourceConfigsAdminPage />} />
         </Route>
       </Routes>
     );

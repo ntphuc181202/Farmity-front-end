@@ -97,6 +97,12 @@ function AdminLayout() {
             </span>
             <span>Materials</span>
           </NavLink>
+          <NavLink to="/admin/resource-configs" className={linkClass}>
+            <span className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-6 h-6 font-semibold text-cyan-400 text-xs">
+              Rc
+            </span>
+            <span>Resource Configs</span>
+          </NavLink>
         </nav>
 
         <div className="px-3 py-4 border-slate-800 border-t">
@@ -261,6 +267,16 @@ function AdminLayout() {
                     Mt
                   </span>
                   <span>Materials</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/resource-configs"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-6 h-6 font-semibold text-cyan-400 text-xs">
+                    Rc
+                  </span>
+                  <span>Resource Configs</span>
                 </NavLink>
               </nav>
               <div className="px-3 py-4 border-slate-800 border-t">
