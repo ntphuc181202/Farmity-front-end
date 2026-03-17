@@ -28,7 +28,9 @@ interface ResourceConfigDoc {
   name: string;
   maxHp: number;
   resourceType: ResourceType;
-  requiredToolId: string;
+  spawnWeight: number;
+  requiredToolType: string;
+  minToolPower: number;
   spriteUrl?: string;
   dropTable: ResourceDrop[];
 }
@@ -38,7 +40,9 @@ const EMPTY: ResourceConfigDoc = {
   name: "",
   maxHp: 100,
   resourceType: "tree",
-  requiredToolId: "",
+  spawnWeight: 1,
+  requiredToolType: "Axe",
+  minToolPower: 1,
   dropTable: [{ itemId: "", minAmount: 1, maxAmount: 1, dropChance: 1 }],
 };
 
@@ -62,7 +66,9 @@ function AdminResourceConfigManager() {
       const normalized = (raw || []).map((r: any) => ({
         ...r,
         resourceType: normalizeResourceType(r.resourceType),
-        requiredToolId: r.requiredToolId || "",
+        spawnWeight: Number(r.spawnWeight) > 0 ? Number(r.spawnWeight) : 1,
+        requiredToolType: String(r.requiredToolType || r.requiredToolId || "Axe").trim() || "Axe",
+        minToolPower: Number(r.minToolPower) > 0 ? Number(r.minToolPower) : 1,
         spriteUrl: r.spriteUrl || "",
         dropTable:
           r.dropTable?.length > 0
@@ -101,7 +107,9 @@ function AdminResourceConfigManager() {
     setForm({
       ...resource,
       resourceType: normalizeResourceType(resource.resourceType),
-      requiredToolId: resource.requiredToolId || "",
+      spawnWeight: Number(resource.spawnWeight) > 0 ? Number(resource.spawnWeight) : 1,
+      requiredToolType: String((resource as any).requiredToolType || (resource as any).requiredToolId || "Axe").trim() || "Axe",
+      minToolPower: Number((resource as any).minToolPower) > 0 ? Number((resource as any).minToolPower) : 1,
       spriteUrl: resource.spriteUrl || "",
       dropTable:
         resource.dropTable?.length > 0
@@ -154,6 +162,19 @@ function AdminResourceConfigManager() {
     if (!form.name.trim()) return "Name is required";
     if (!RESOURCE_TYPES.includes(form.resourceType)) return "Resource type is invalid";
     if (!Number.isFinite(form.maxHp) || Number(form.maxHp) <= 0) return "Max HP must be greater than 0";
+    if (!Number.isFinite(form.spawnWeight) || Number(form.spawnWeight) < 1) {
+      return "Spawn weight must be an integer greater than or equal to 1";
+    }
+    if (!Number.isInteger(Number(form.spawnWeight))) {
+      return "Spawn weight must be an integer greater than or equal to 1";
+    }
+    if (!form.requiredToolType.trim()) return "Required tool type is required";
+    if (!Number.isFinite(form.minToolPower) || Number(form.minToolPower) < 1) {
+      return "Min tool power must be an integer greater than or equal to 1";
+    }
+    if (!Number.isInteger(Number(form.minToolPower))) {
+      return "Min tool power must be an integer greater than or equal to 1";
+    }
     if (!form.dropTable.length) return "At least one drop table row is required";
 
     for (let i = 0; i < form.dropTable.length; i += 1) {
@@ -181,7 +202,9 @@ function AdminResourceConfigManager() {
     fd.append("name", form.name.trim());
     fd.append("maxHp", String(Number(form.maxHp)));
     fd.append("resourceType", form.resourceType);
-    fd.append("requiredToolId", form.requiredToolId.trim());
+    fd.append("spawnWeight", String(Number(form.spawnWeight)));
+    fd.append("requiredToolType", form.requiredToolType.trim());
+    fd.append("minToolPower", String(Number(form.minToolPower)));
     fd.append(
       "dropTable",
       JSON.stringify(
@@ -266,7 +289,7 @@ function AdminResourceConfigManager() {
       r.resourceId.toLowerCase().includes(t) ||
       r.name.toLowerCase().includes(t) ||
       r.resourceType.toLowerCase().includes(t) ||
-      (r.requiredToolId || "").toLowerCase().includes(t)
+      (r.requiredToolType || "").toLowerCase().includes(t)
     );
   });
 
@@ -287,7 +310,7 @@ function AdminResourceConfigManager() {
       <Card>
         <CardHeader>
           <Input
-            placeholder="Search by ID, name or required tool..."
+            placeholder="Search by ID, name, type or required tool..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -309,8 +332,9 @@ function AdminResourceConfigManager() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-white">{resource.name}</p>
                 <p className="truncate text-xs text-slate-400">
-                  {resource.resourceId} | Type {resource.resourceType} | HP {resource.maxHp} | Drops {resource.dropTable?.length || 0}
-                  {resource.requiredToolId ? ` | Tool ${resource.requiredToolId}` : ""}
+                  {resource.resourceId} | Type {resource.resourceType} | Weight {resource.spawnWeight} | HP {resource.maxHp} | Drops {resource.dropTable?.length || 0}
+                  {resource.requiredToolType ? ` | Tool ${resource.requiredToolType}` : ""}
+                  {resource.minToolPower ? ` | Min Power ${resource.minToolPower}` : ""}
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
@@ -359,7 +383,7 @@ function AdminResourceConfigManager() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                   <div className="space-y-1">
                     <Label>Max HP *</Label>
                     <Input
@@ -384,11 +408,31 @@ function AdminResourceConfigManager() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <Label>Required Tool ID</Label>
+                    <Label>Spawn Weight</Label>
                     <Input
-                      value={form.requiredToolId}
-                      onChange={(e) => set("requiredToolId", e.target.value)}
-                      placeholder="Optional"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={form.spawnWeight}
+                      onChange={(e) => setNum("spawnWeight", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Required Tool Type</Label>
+                    <Input
+                      value={form.requiredToolType}
+                      onChange={(e) => set("requiredToolType", e.target.value)}
+                      placeholder="e.g. Axe"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Min Tool Power</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={form.minToolPower}
+                      onChange={(e) => setNum("minToolPower", e.target.value)}
                     />
                   </div>
                 </div>

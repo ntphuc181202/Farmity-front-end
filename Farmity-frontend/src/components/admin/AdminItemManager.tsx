@@ -22,6 +22,7 @@ const ITEM_TYPE_LABELS: Record<number, string> = {
   10: "Resource",
   11: "Gift",
   12: "Quest",
+  14: "Fertilizer",
 };
 
 const ITEM_CATEGORY_LABELS: Record<number, string> = {
@@ -676,7 +677,7 @@ function TypeFields({
     : "Extra Fields";
 
   // Hide section for types with no extra fields
-  if (itemType === 2 || itemType === 5) return null;
+  if (itemType === 2 || itemType === 5 || itemType === 14) return null;
 
   return (
     <section className="space-y-3 pt-2 border-slate-800 border-t">

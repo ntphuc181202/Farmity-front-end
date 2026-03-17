@@ -7,6 +7,7 @@ const resourceConfigApi = {
   },
 
   // Create resource config: POST /game-data/resource-configs (multipart/form-data)
+  // Payload fields include resourceType and spawnWeight per ENDPOINTS.md.
   createResourceConfig: (formData) => {
     return axiosClient.post("/game-data/resource-configs", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -14,6 +15,7 @@ const resourceConfigApi = {
   },
 
   // Update resource config: PUT /game-data/resource-configs/:resourceId (multipart/form-data)
+  // Payload fields include resourceType and spawnWeight per ENDPOINTS.md.
   updateResourceConfig: (resourceId, formData) => {
     return axiosClient.put(`/game-data/resource-configs/${resourceId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
