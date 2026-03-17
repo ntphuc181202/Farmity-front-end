@@ -22,6 +22,7 @@ const ITEM_TYPE_LABELS: Record<number, string> = {
   10: "Resource",
   11: "Gift",
   12: "Quest",
+  14: "Fertilizer",
 };
 
 const ITEM_CATEGORY_LABELS: Record<number, string> = {
@@ -37,14 +38,6 @@ const TOOL_TYPE_LABELS: Record<number, string> = {
   2: "Pickaxe",
   3: "Axe",
   4: "FishingRod",
-};
-
-const MATERIAL_LABELS: Record<number, string> = {
-  0: "Basic",
-  1: "Copper",
-  2: "Steel",
-  3: "Gold",
-  4: "Diamond",
 };
 
 /* ───────── types ───────── */
@@ -77,7 +70,7 @@ interface ItemDoc {
   toolType?: number;
   toolLevel?: number;
   toolPower?: number;
-  toolMaterial?: number;
+  toolMaterialId?: string;
   plantId?: string;
   sourcePlantId?: string;
   pollinationSuccessChance?: number;
@@ -89,7 +82,7 @@ interface ItemDoc {
   damage?: number;
   critChance?: number;
   attackSpeed?: number;
-  weaponMaterial?: number;
+  weaponMaterialId?: string;
   difficulty?: number;
   fishingSeasons?: number[];
   isLegendary?: boolean;
@@ -154,7 +147,7 @@ function buildFormData(form: ItemDoc, iconFile: File | null): FormData {
     appendIfDefined(fd, "toolType", form.toolType);
     appendIfDefined(fd, "toolLevel", form.toolLevel);
     appendIfDefined(fd, "toolPower", form.toolPower);
-    appendIfDefined(fd, "toolMaterial", form.toolMaterial);
+    appendIfDefined(fd, "toolMaterialId", form.toolMaterialId);
   } else if (t === 1) {
     appendIfDefined(fd, "plantId", form.plantId);
   } else if (t === 3) {
@@ -172,7 +165,7 @@ function buildFormData(form: ItemDoc, iconFile: File | null): FormData {
     appendIfDefined(fd, "damage", form.damage);
     appendIfDefined(fd, "critChance", form.critChance);
     appendIfDefined(fd, "attackSpeed", form.attackSpeed);
-    appendIfDefined(fd, "weaponMaterial", form.weaponMaterial);
+    appendIfDefined(fd, "weaponMaterialId", form.weaponMaterialId);
   } else if (t === 7) {
     appendIfDefined(fd, "difficulty", form.difficulty);
     if (form.fishingSeasons && form.fishingSeasons.length > 0) {
@@ -210,6 +203,8 @@ function appendIfDefined(fd: FormData, key: string, v: unknown) {
 function AdminItemManager() {
   const [items, setItems] = useState<ItemDoc[]>([]);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -334,11 +329,13 @@ function AdminItemManager() {
   /* ── filter + paginate ── */
   const filtered = items.filter((i) => {
     const t = search.toLowerCase();
-    return (
+    const matchText =
       i.itemID.toLowerCase().includes(t) ||
       i.itemName.toLowerCase().includes(t) ||
-      (i.description || "").toLowerCase().includes(t)
-    );
+      (i.description || "").toLowerCase().includes(t);
+    const matchType = typeFilter === "all" || String(i.itemType) === typeFilter;
+    const matchCategory = categoryFilter === "all" || String(i.itemCategory) === categoryFilter;
+    return matchText && matchType && matchCategory;
   });
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -414,8 +411,8 @@ function AdminItemManager() {
       {/* Header */}
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Items Catalog</h1>
-          <p className="text-sm text-slate-400 mt-0.5">{items.length} items total</p>
+          <h1 className="font-semibold text-white text-2xl">Items Catalog</h1>
+          <p className="mt-0.5 text-slate-400 text-sm">{items.length} items total</p>
         </div>
         <Button onClick={openCreate}>+ New Item</Button>
       </header>
@@ -423,26 +420,49 @@ function AdminItemManager() {
       {/* List */}
       <Card>
         <CardHeader>
-          <Input
-            placeholder="Search by ID, name or description…"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          />
+          <div className="flex flex-wrap gap-3">
+            <Input
+              placeholder="Search by ID, name or description…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="flex-1 min-w-[180px]"
+            />
+            <select
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
+            >
+              <option value="all">All Types</option>
+              {Object.entries(ITEM_TYPE_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <select
+              value={categoryFilter}
+              onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
+            >
+              <option value="all">All Categories</option>
+              {Object.entries(ITEM_CATEGORY_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
         </CardHeader>
         <CardContent className="divide-y divide-slate-800">
           {visible.length === 0 && (
-            <p className="text-slate-500 text-sm text-center py-8">No items found.</p>
+            <p className="py-8 text-slate-500 text-sm text-center">No items found.</p>
           )}
           {visible.map((item) => (
-            <div key={item.itemID} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-800/40 transition-colors">
+            <div key={item.itemID} className="flex items-center gap-4 hover:bg-slate-800/40 px-6 py-3 transition-colors">
               {item.iconUrl ? (
-                <img src={item.iconUrl} alt={item.itemName} className="w-10 h-10 rounded-md object-cover bg-slate-800 shrink-0 pixel-art" />
+                <img src={item.iconUrl} alt={item.itemName} className="bg-slate-800 rounded-md w-10 h-10 object-cover shrink-0 pixel-art" />
               ) : (
-                <div className="w-10 h-10 rounded-md bg-slate-800 shrink-0" />
+                <div className="bg-slate-800 rounded-md w-10 h-10 shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-white font-medium truncate">{item.itemName}</p>
-                <p className="text-xs text-slate-400 truncate">{item.itemID} · {ITEM_TYPE_LABELS[item.itemType] ?? "Unknown"}</p>
+                <p className="font-medium text-white truncate">{item.itemName}</p>
+                <p className="text-slate-400 text-xs truncate">{item.itemID} · {ITEM_TYPE_LABELS[item.itemType] ?? "Unknown"}</p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={() => openEdit(item)}>Edit</Button>
@@ -457,26 +477,26 @@ function AdminItemManager() {
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2">
           <Button size="sm" variant="outline" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>Prev</Button>
-          <span className="text-sm text-slate-400">{currentPage} / {totalPages}</span>
+          <span className="text-slate-400 text-sm">{currentPage} / {totalPages}</span>
           <Button size="sm" variant="outline" disabled={currentPage >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
         </div>
       )}
 
       {/* ═══════  Modal  ═══════ */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto">
-          <Card className="w-full max-w-3xl bg-slate-950 border border-slate-800 flex flex-col my-8">
-            <CardHeader className="border-b border-slate-800 shrink-0">
+        <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
+          <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
+            <CardHeader className="border-slate-800 border-b shrink-0">
               <CardTitle>{editingItemID ? `Edit — ${editingItemID}` : "Create New Item"}</CardTitle>
             </CardHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
 
                 {/* ─── Base Fields ─── */}
                 <section className="space-y-3">
-                  <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Base Fields</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">Base Fields</h3>
+                  <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                     <Field label="Item ID *">
                       <Input value={form.itemID} onChange={(e) => set("itemID", e.target.value)} placeholder="e.g. tool_hoe_basic" disabled={!!editingItemID} />
                     </Field>
@@ -491,25 +511,25 @@ function AdminItemManager() {
                       onChange={(e) => set("description", e.target.value)}
                       placeholder="Flavour text…"
                       rows={2}
-                      className="flex w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      className="flex bg-slate-900 px-3 py-2 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full text-slate-50 placeholder:text-slate-500 text-sm"
                     />
                   </Field>
 
                   {/* Icon upload */}
                   <Field label={editingItemID ? "Icon (optional, replaces current)" : "Icon *"}>
-                    <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-slate-500 transition bg-slate-900">
-                      <span className="text-sm text-slate-400">{iconFile ? iconFile.name : "Click to select icon image"}</span>
+                    <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-24 transition cursor-pointer">
+                      <span className="text-slate-400 text-sm">{iconFile ? iconFile.name : "Click to select icon image"}</span>
                       <input type="file" accept="image/*" onChange={handleIconPick} className="hidden" />
                     </label>
-                    {iconPreview && <img src={iconPreview} alt="preview" className="w-16 h-16 mt-2 rounded-md object-cover bg-slate-800 pixel-art" />}
+                    {iconPreview && <img src={iconPreview} alt="preview" className="bg-slate-800 mt-2 rounded-md w-16 h-16 object-cover pixel-art" />}
                   </Field>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
                     <Field label="Item Type">
                       <select
                         value={form.itemType}
                         onChange={(e) => set("itemType", Number(e.target.value))}
-                        className="flex h-9 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                        className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {Object.entries(ITEM_TYPE_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>{v} ({k})</option>
@@ -520,7 +540,7 @@ function AdminItemManager() {
                       <select
                         value={form.itemCategory}
                         onChange={(e) => set("itemCategory", Number(e.target.value))}
-                        className="flex h-9 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1 text-sm text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                        className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {Object.entries(ITEM_CATEGORY_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>{v} ({k})</option>
@@ -535,7 +555,7 @@ function AdminItemManager() {
                     </Field>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
                     <Field label="Buy Price">
                       <Input type="number" value={form.buyPrice} onChange={(e) => setNum("buyPrice", e.target.value)} min={0} />
                     </Field>
@@ -554,23 +574,23 @@ function AdminItemManager() {
 
                 {/* ─── NPC Preferences ─── */}
                 <section className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">NPC Preferences</h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">NPC Preferences</h3>
                     <Button type="button" size="sm" variant="outline" onClick={addNpcPref}>+ Add</Button>
                   </div>
                   {(form.npcPreferenceNames || []).map((name, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
+                    <div key={idx} className="flex items-center gap-2">
                       <Input className="flex-1" placeholder="NPC name" value={name} onChange={(e) => setNpcName(idx, e.target.value)} />
                       <select
                         value={(form.npcPreferenceReactions || [])[idx] ?? 0}
                         onChange={(e) => setNpcReaction(idx, Number(e.target.value))}
-                        className="h-9 rounded-md border border-slate-700 bg-slate-900 px-2 text-sm text-slate-50"
+                        className="bg-slate-900 px-2 border border-slate-700 rounded-md h-9 text-slate-50 text-sm"
                       >
                         {[-2, -1, 0, 1, 2].map((v) => (
                           <option key={v} value={v}>{v}</option>
                         ))}
                       </select>
-                      <Button type="button" size="icon" variant="destructive" className="h-8 w-8 shrink-0" onClick={() => removeNpcPref(idx)}>×</Button>
+                      <Button type="button" size="icon" variant="destructive" className="w-8 h-8 shrink-0" onClick={() => removeNpcPref(idx)}>×</Button>
                     </div>
                   ))}
                 </section>
@@ -591,7 +611,7 @@ function AdminItemManager() {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-slate-800 p-4 flex justify-end gap-2 shrink-0">
+            <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? "Saving…" : editingItemID ? "Save Changes" : "Create Item"}
@@ -621,8 +641,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 /* Checkbox toggle */
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (c: boolean) => void }) {
   return (
-    <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer select-none">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-emerald-500 w-4 h-4 rounded" />
+    <label className="flex items-center gap-2 text-slate-300 text-sm cursor-pointer select-none">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="rounded w-4 h-4 accent-emerald-500" />
       {label}
     </label>
   );
@@ -657,15 +677,15 @@ function TypeFields({
     : "Extra Fields";
 
   // Hide section for types with no extra fields
-  if (itemType === 2 || itemType === 5) return null;
+  if (itemType === 2 || itemType === 5 || itemType === 14) return null;
 
   return (
-    <section className="space-y-3 pt-2 border-t border-slate-800">
-      <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider">{sectionHeader}</h3>
+    <section className="space-y-3 pt-2 border-slate-800 border-t">
+      <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">{sectionHeader}</h3>
 
       {/* 0 – Tool */}
       {itemType === 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
           <Field label="Tool Type">
             <select value={form.toolType ?? 0} onChange={(e) => set("toolType", Number(e.target.value))} className={selectClass}>
               {Object.entries(TOOL_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -677,10 +697,8 @@ function TypeFields({
           <Field label="Tool Power">
             <Input type="number" value={form.toolPower ?? 1} onChange={(e) => setNum("toolPower", e.target.value)} min={1} />
           </Field>
-          <Field label="Material">
-            <select value={form.toolMaterial ?? 0} onChange={(e) => set("toolMaterial", Number(e.target.value))} className={selectClass}>
-              {Object.entries(MATERIAL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
+          <Field label="Material ID">
+            <Input value={form.toolMaterialId ?? ""} onChange={(e) => set("toolMaterialId", e.target.value)} placeholder="e.g. mat_copper" />
           </Field>
         </div>
       )}
@@ -695,7 +713,7 @@ function TypeFields({
       {/* 3 – Pollen */}
       {itemType === 3 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
             <Field label="Source Plant ID">
               <Input value={form.sourcePlantId ?? ""} onChange={(e) => set("sourcePlantId", e.target.value)} placeholder="e.g. plant_corn" />
             </Field>
@@ -708,15 +726,15 @@ function TypeFields({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <Label>Cross Results</Label>
               <Button type="button" size="sm" variant="outline" onClick={addCrossResult}>+ Add</Button>
             </div>
             {(form.crossResults || []).map((cr, idx) => (
-              <div key={idx} className="flex gap-2 items-center">
+              <div key={idx} className="flex items-center gap-2">
                 <Input className="flex-1" placeholder="Target Plant ID" value={cr.targetPlantId} onChange={(e) => setCrossField(idx, "targetPlantId", e.target.value)} />
                 <Input className="flex-1" placeholder="Result Plant ID" value={cr.resultPlantId} onChange={(e) => setCrossField(idx, "resultPlantId", e.target.value)} />
-                <Button type="button" size="icon" variant="destructive" className="h-8 w-8 shrink-0" onClick={() => removeCrossResult(idx)}>×</Button>
+                <Button type="button" size="icon" variant="destructive" className="w-8 h-8 shrink-0" onClick={() => removeCrossResult(idx)}>×</Button>
               </div>
             ))}
           </div>
@@ -725,7 +743,7 @@ function TypeFields({
 
       {/* 4 – Consumable / 8 – Cooking */}
       {(itemType === 4 || itemType === 8) && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
           <Field label="Energy Restore">
             <Input type="number" value={form.energyRestore ?? 0} onChange={(e) => setNum("energyRestore", e.target.value)} />
           </Field>
@@ -740,7 +758,7 @@ function TypeFields({
 
       {/* 6 – Weapon */}
       {itemType === 6 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
           <Field label="Damage">
             <Input type="number" value={form.damage ?? 10} onChange={(e) => setNum("damage", e.target.value)} min={0} />
           </Field>
@@ -750,10 +768,8 @@ function TypeFields({
           <Field label="Attack Speed">
             <Input type="number" step="0.1" value={form.attackSpeed ?? 1.0} onChange={(e) => setNum("attackSpeed", e.target.value)} min={0} />
           </Field>
-          <Field label="Material">
-            <select value={form.weaponMaterial ?? 0} onChange={(e) => set("weaponMaterial", Number(e.target.value))} className={selectClass}>
-              {Object.entries(MATERIAL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
+          <Field label="Material ID">
+            <Input value={form.weaponMaterialId ?? ""} onChange={(e) => set("weaponMaterialId", e.target.value)} placeholder="e.g. mat_steel" />
           </Field>
         </div>
       )}
@@ -761,7 +777,7 @@ function TypeFields({
       {/* 7 – Fish */}
       {itemType === 7 && (
         <div className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
             <Field label="Difficulty">
               <Input type="number" value={form.difficulty ?? 1} onChange={(e) => setNum("difficulty", e.target.value)} min={0} />
             </Field>
@@ -816,7 +832,7 @@ function TypeFields({
 
       {/* 12 – Quest */}
       {itemType === 12 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
           <Field label="Related Quest ID">
             <Input value={form.relatedQuestID ?? ""} onChange={(e) => set("relatedQuestID", e.target.value)} placeholder="e.g. quest_goblins_01" />
           </Field>
