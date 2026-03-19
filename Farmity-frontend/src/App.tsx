@@ -32,6 +32,7 @@ import FAQPage from "./pages/public/faq/FAQPage";
 import TroubleshootingPage from "./pages/public/troubleshooting/TroubleshootingPage";
 import ContactSupportPage from "./pages/public/support/ContactSupportPage";
 import DownloadPage from "./pages/public/dowload/DownloadPage";
+import WikiPage from "./pages/public/wiki/WikiPage";
 
 type RequireAdminProps = {
   children: JSX.Element;
@@ -86,7 +87,10 @@ function App() {
           <Route path="main-menu" element={<MainMenuConfigPage />} />
           <Route path="skin-configs" element={<SkinConfigPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
-          <Route path="resource-configs" element={<ResourceConfigsAdminPage />} />
+          <Route
+            path="resource-configs"
+            element={<ResourceConfigsAdminPage />}
+          />
         </Route>
       </Routes>
     );
@@ -119,12 +123,15 @@ function App() {
             <NavLink to="/download" className={navLinkClass}>
               Dowload
             </NavLink>
-            <a
+            <NavLink to="/wiki" className={navLinkClass}>
+              Wiki
+            </NavLink>
+            {/* <a
               href="#"
               className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
             >
               Wiki
-            </a>
+            </a> */}
           </nav>
           {/* Right social icons (desktop only for spacing) */}
           <div className="hidden sm:flex items-center gap-3 sm:gap-4 ml-auto">
@@ -284,6 +291,7 @@ function App() {
           <Route path="/troubleshooting" element={<TroubleshootingPage />} />
           <Route path="/contact-support" element={<ContactSupportPage />} />
           <Route path="/download" element={<DownloadPage />} />
+          <Route path="/wiki" element={<WikiPage />} />
         </Routes>
       </main>
 
