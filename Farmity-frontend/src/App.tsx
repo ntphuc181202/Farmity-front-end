@@ -24,6 +24,7 @@ import MainMenuConfigPage from "./pages/admin/game-config/MainMenuConfigPage";
 import SkinConfigPage from "./pages/admin/game-config/SkinConfigPage";
 import MaterialsAdminPage from "./pages/admin/materials/MaterialsAdminPage";
 import ResourceConfigsAdminPage from "./pages/admin/ResourceConfigsAdminPage";
+import AchievementsAdminPage from "./pages/admin/achievements/AchievementsAdminPage";
 import MediaPage from "./pages/public/media/MediaPage";
 import MediaDetailPage from "./pages/public/media/MediaDetailPage";
 import NewsPage from "./pages/public/news/NewPage";
@@ -87,10 +88,15 @@ function App() {
           <Route path="main-menu" element={<MainMenuConfigPage />} />
           <Route path="skin-configs" element={<SkinConfigPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
+<<<<<<< HEAD
           <Route
             path="resource-configs"
             element={<ResourceConfigsAdminPage />}
           />
+=======
+          <Route path="resource-configs" element={<ResourceConfigsAdminPage />} />
+          <Route path="achievements" element={<AchievementsAdminPage />} />
+>>>>>>> 2e7e998fe949021aefc2356fb2d097c5fa10150f
         </Route>
       </Routes>
     );
