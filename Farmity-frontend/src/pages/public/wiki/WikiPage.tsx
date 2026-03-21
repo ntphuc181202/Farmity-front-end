@@ -336,9 +336,7 @@ function WikiPage() {
                                   style={{ width: 24, marginRight: 10 }}
                                 />
                               )}
-                              <a href="#" className="text-decoration-none">
-                                {item.itemName}
-                              </a>
+                              <span>{item.itemName}</span>
                             </li>
                           ))}
                         </ul>
@@ -358,53 +356,59 @@ function WikiPage() {
                   Plants ({plants.length})
                 </div>
                 <div className="card-body p-0">
-                  {plants.map((plant) => (
-                    <div
-                      key={plant._id}
-                      className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center p-2 border-bottom"
-                    >
-                      {/* Plant name */}
-                      <div className="mb-2 mb-sm-0" style={{ minWidth: 140 }}>
-                        <a href="#" className="text-decoration-none fw-bold">
-                          {plant.plantName}
-                        </a>
-                        {plant.isHybrid && (
-                          <span className="badge bg-warning text-dark ms-2">
-                            Hybrid
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Growth stages */}
-                      <div className="d-flex align-items-center flex-wrap gap-4 gap-sm-5 ms-0 ms-sm-5">
-                        {plant.growthStages
-                          ?.sort((a, b) => a.stageNum - b.stageNum)
-                          .map((stage) => (
-                            <div
-                              key={stage.stageNum}
-                              className="text-center"
-                              title={`Stage ${stage.stageNum} (${stage.growthDurationMinutes} min)`}
-                            >
-                              {stage.stageIconUrl ? (
-                                <img
-                                  src={stage.stageIconUrl}
-                                  alt={`Stage ${stage.stageNum}`}
-                                  style={{ width: 32, height: 32 }}
-                                />
-                              ) : (
-                                <div
-                                  className="bg-light border rounded"
-                                  style={{ width: 32, height: 32 }}
-                                />
-                              )}
-                              <div style={{ fontSize: 10 }}>
-                                S{stage.stageNum}
-                              </div>
+                  <table className="table table-hover mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th style={{ width: "25%" }}>Plant</th>
+                        <th>Growth Stages</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {plants.map((plant) => (
+                        <tr key={plant._id}>
+                          <td className="align-middle" style={{ minWidth: 140 }}>
+                            <span className="fw-bold">
+                              {plant.plantName}
+                            </span>
+                            {plant.isHybrid && (
+                              <span className="badge bg-warning text-dark ms-2">
+                                Hybrid
+                              </span>
+                            )}
+                          </td>
+                          <td className="align-middle">
+                            <div className="d-flex align-items-center flex-wrap gap-4 gap-sm-5">
+                              {plant.growthStages
+                                ?.sort((a, b) => a.stageNum - b.stageNum)
+                                .map((stage) => (
+                                  <div
+                                    key={stage.stageNum}
+                                    className="text-center"
+                                    title={`Stage ${stage.stageNum} (${stage.growthDurationMinutes} min)`}
+                                  >
+                                    {stage.stageIconUrl ? (
+                                      <img
+                                        src={stage.stageIconUrl}
+                                        alt={`Stage ${stage.stageNum}`}
+                                        style={{ width: 32, height: 32 }}
+                                      />
+                                    ) : (
+                                      <div
+                                        className="bg-light border rounded"
+                                        style={{ width: 32, height: 32 }}
+                                      />
+                                    )}
+                                    <div style={{ fontSize: 10 }}>
+                                      S{stage.stageNum}
+                                    </div>
+                                  </div>
+                                ))}
                             </div>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -436,12 +440,9 @@ function WikiPage() {
                             <tr key={recipe._id}>
                               {/* Recipe name */}
                               <td>
-                                <a
-                                  href="#"
-                                  className="text-decoration-none fw-bold"
-                                >
+                                <span className="fw-bold">
                                   {recipe.recipeName}
-                                </a>
+                                </span>
                                 {recipe.description && (
                                   <div>
                                     <small className="text-muted">
@@ -698,9 +699,7 @@ function WikiPage() {
                               style={{ width: 24, marginRight: 10 }}
                             />
                           )}
-                          <a href="#" className="text-decoration-none">
-                            {mat.materialName}
-                          </a>
+                          <span>{mat.materialName}</span>
                         </div>
                       </div>
                     ))}
