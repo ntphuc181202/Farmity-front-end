@@ -109,6 +109,12 @@ function AdminLayout() {
             </span>
             <span>Achievements</span>
           </NavLink>
+          <NavLink to="/admin/skills" className={linkClass}>
+            <span className="inline-flex justify-center items-center bg-indigo-500/10 rounded-md w-6 h-6 font-semibold text-indigo-300 text-xs">
+              Sk
+            </span>
+            <span>Combat Skills</span>
+          </NavLink>
         </nav>
 
         <div className="px-3 py-4 border-slate-800 border-t">
@@ -293,6 +299,16 @@ function AdminLayout() {
                     Ac
                   </span>
                   <span>Achievements</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/skills"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex justify-center items-center bg-indigo-500/10 rounded-md w-6 h-6 font-semibold text-indigo-300 text-xs">
+                    Sk
+                  </span>
+                  <span>Combat Skills</span>
                 </NavLink>
               </nav>
               <div className="px-3 py-4 border-slate-800 border-t">
