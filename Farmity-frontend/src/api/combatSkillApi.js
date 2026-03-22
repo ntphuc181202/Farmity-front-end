@@ -7,8 +7,14 @@ const combatSkillApi = {
   getCombatSkillById: (skillId) => axiosClient.get(`/game-data/combat-skills/by-skill-id/${skillId}`),
 
   // Admin write endpoints
-  createCombatSkill: (payload) => axiosClient.post("/game-data/combat-skills/create", payload),
-  updateCombatSkill: (skillId, payload) => axiosClient.put(`/game-data/combat-skills/${skillId}`, payload),
+  createCombatSkill: (formData) =>
+    axiosClient.post("/game-data/combat-skills/create", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  updateCombatSkill: (skillId, formData) =>
+    axiosClient.put(`/game-data/combat-skills/${skillId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   deleteCombatSkill: (skillId) => axiosClient.delete(`/game-data/combat-skills/${skillId}`),
 };
 

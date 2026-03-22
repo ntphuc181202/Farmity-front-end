@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, FormEvent } from "react";
+import { useEffect, useMemo, useState, FormEvent, ChangeEvent } from "react";
 import Swal from "sweetalert2";
 import combatSkillApi from "../../api/combatSkillApi";
 import { Button } from "../ui/button";
@@ -10,7 +10,6 @@ interface CombatSkillDoc {
   skillId: string;
   skillName: string;
   skillDescription?: string;
-  iconUrl?: string;
   ownership?: string;
   category?: string;
   requiredWeaponType?: number | "";
@@ -27,7 +26,7 @@ interface CombatSkillDoc {
   slashVfxPositionOffsetX?: number;
   slashVfxPositionOffsetY?: number;
   slashKnockbackForce?: number;
-  damagePopupPrefabKey?: string;
+  iconUrl?: string;
 }
 
 interface CatalogEnums {
@@ -42,11 +41,17 @@ const FALLBACK_ENUMS: CatalogEnums = {
   diceTier: ["D6", "D8", "D10", "D12", "D20"],
 };
 
+const WEAPON_TYPE_LABELS: Record<number, string> = {
+  0: "None",
+  1: "Sword",
+  2: "Staff",
+  3: "Spear",
+};
+
 const EMPTY_SKILL: CombatSkillDoc = {
   skillId: "",
   skillName: "",
   skillDescription: "",
-  iconUrl: "",
   ownership: "PlayerSkill",
   category: "None",
   requiredWeaponType: "",
@@ -63,11 +68,17 @@ const EMPTY_SKILL: CombatSkillDoc = {
   slashVfxPositionOffsetX: 0,
   slashVfxPositionOffsetY: 0,
   slashKnockbackForce: 0,
-  damagePopupPrefabKey: "",
 };
 
-function sanitizePayload(form: CombatSkillDoc, editing: boolean) {
+function buildFormData(form: CombatSkillDoc, iconFile: File | null, editing: boolean): FormData {
+  const fd = new FormData();
+
+  if (iconFile) {
+    fd.append("icon", iconFile);
+  }
+
   const payload: Record<string, unknown> = { ...form };
+  delete payload.iconUrl;
 
   if (editing) {
     delete payload.skillId;
@@ -75,12 +86,12 @@ function sanitizePayload(form: CombatSkillDoc, editing: boolean) {
 
   Object.keys(payload).forEach((key) => {
     const value = payload[key];
-    if (value === "" || value === undefined || value === null) {
-      delete payload[key];
+    if (value !== "" && value !== undefined && value !== null) {
+      fd.append(key, String(value));
     }
   });
 
-  return payload;
+  return fd;
 }
 
 function AdminCombatSkillManager() {
@@ -94,6 +105,8 @@ function AdminCombatSkillManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [form, setForm] = useState<CombatSkillDoc>({ ...EMPTY_SKILL });
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState("");
   const [loading, setLoading] = useState(false);
 
   const pageSize = 10;
@@ -135,6 +148,8 @@ function AdminCombatSkillManager() {
 
   const resetForm = () => {
     setForm({ ...EMPTY_SKILL });
+    setIconFile(null);
+    setIconPreview("");
     setEditingSkillId(null);
   };
 
@@ -145,6 +160,8 @@ function AdminCombatSkillManager() {
 
   const openEdit = (skill: CombatSkillDoc) => {
     setForm({ ...EMPTY_SKILL, ...skill });
+    setIconFile(null);
+    setIconPreview(skill.iconUrl || "");
     setEditingSkillId(skill.skillId);
     setIsModalOpen(true);
   };
@@ -157,6 +174,13 @@ function AdminCombatSkillManager() {
     set(key, raw === "" ? ("" as never) : (Number(raw) as never));
   };
 
+  const handleIconPick = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIconFile(file);
+    setIconPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e?: FormEvent) => {
     e?.preventDefault();
 
@@ -165,17 +189,32 @@ function AdminCombatSkillManager() {
       return;
     }
 
+    if (!editingSkillId && !iconFile) {
+      Swal.fire({ icon: "warning", title: "Icon image is required for new combat skills", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    const normalizedForm: CombatSkillDoc = {
+      ...form,
+      requiredWeaponType: (form.ownership || "PlayerSkill") === "PlayerSkill" ? 0 : form.requiredWeaponType,
+    };
+
+    if ((normalizedForm.ownership || "PlayerSkill") === "WeaponSkill" && Number(normalizedForm.requiredWeaponType || 0) <= 0) {
+      Swal.fire({ icon: "warning", title: "Weapon Skill requires Weapon Type", text: "Please choose requiredWeaponType > 0.", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
     const isEditing = Boolean(editingSkillId);
-    const payload = sanitizePayload(form, isEditing);
+    const fd = buildFormData(normalizedForm, iconFile, isEditing);
 
     try {
       setLoading(true);
 
       if (isEditing && editingSkillId) {
-        await combatSkillApi.updateCombatSkill(editingSkillId, payload);
+        await combatSkillApi.updateCombatSkill(editingSkillId, fd);
         Swal.fire({ toast: true, icon: "success", title: "Combat skill updated", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
       } else {
-        await combatSkillApi.createCombatSkill(payload);
+        await combatSkillApi.createCombatSkill(fd);
         Swal.fire({ toast: true, icon: "success", title: "Combat skill created", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
       }
 
@@ -365,20 +404,25 @@ function AdminCombatSkillManager() {
                     />
                   </Field>
 
-                  <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
-                    <Field label="Icon URL">
-                      <Input value={form.iconUrl || ""} onChange={(e) => set("iconUrl", e.target.value)} placeholder="https://..." />
-                    </Field>
-                    <Field label="Damage Popup Prefab Key">
-                      <Input value={form.damagePopupPrefabKey || ""} onChange={(e) => set("damagePopupPrefabKey", e.target.value)} placeholder="popup_damage_default" />
-                    </Field>
-                  </div>
+                  <Field label={editingSkillId ? "Icon (optional, replaces current)" : "Icon *"}>
+                    <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-24 transition cursor-pointer">
+                      <span className="text-slate-400 text-sm">{iconFile ? iconFile.name : "Click to select icon image"}</span>
+                      <input type="file" accept="image/*" onChange={handleIconPick} className="hidden" />
+                    </label>
+                    {iconPreview && <img src={iconPreview} alt="skill icon preview" className="bg-slate-800 mt-2 rounded-md w-16 h-16 object-cover" />}
+                  </Field>
 
                   <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
                     <Field label="Ownership">
                       <select
                         value={form.ownership || "PlayerSkill"}
-                        onChange={(e) => set("ownership", e.target.value)}
+                        onChange={(e) => {
+                          const nextOwnership = e.target.value;
+                          set("ownership", nextOwnership);
+                          if (nextOwnership === "PlayerSkill") {
+                            set("requiredWeaponType", 0);
+                          }
+                        }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {catalogEnums.ownership.map((o) => (
@@ -424,13 +468,18 @@ function AdminCombatSkillManager() {
                       <Input type="number" value={form.skillMultiplier ?? 1} onChange={(e) => setNum("skillMultiplier", e.target.value)} min={0} step="0.01" />
                     </Field>
                     <Field label="Required Weapon Type">
-                      <Input
-                        type="number"
-                        value={form.requiredWeaponType ?? ""}
+                      <select
+                        value={Number(form.requiredWeaponType ?? 0)}
                         onChange={(e) => setNum("requiredWeaponType", e.target.value)}
-                        min={0}
-                        placeholder="Optional. Useful for WeaponSkill"
-                      />
+                        disabled={(form.ownership || "PlayerSkill") === "PlayerSkill"}
+                        className="flex bg-slate-900 disabled:opacity-60 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
+                      >
+                        {Object.entries(WEAPON_TYPE_LABELS).map(([k, v]) => (
+                          <option key={k} value={k}>
+                            {v} ({k})
+                          </option>
+                        ))}
+                      </select>
                     </Field>
                   </div>
                 </section>

@@ -1,6 +1,11 @@
 import axiosClient from "./axiosClient";
 
 const materialApi = {
+  // Get material catalog: GET /game-data/materials/catalog
+  getMaterialCatalog: () => {
+    return axiosClient.get("/game-data/materials/catalog");
+  },
+
   // Get all materials: GET /game-data/materials
   getAllMaterials: () => {
     return axiosClient.get("/game-data/materials");

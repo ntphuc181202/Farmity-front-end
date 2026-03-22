@@ -1,6 +1,8 @@
 import { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import Swal from "sweetalert2";
 import itemApi from "../../api/itemApi";
+import materialApi from "../../api/materialApi";
+import combatSkillApi from "../../api/combatSkillApi";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -30,6 +32,17 @@ const ITEM_CATEGORY_LABELS: Record<number, string> = {
   1: "Mining",
   2: "Fishing",
   3: "Cooking",
+  4: "Crafting",
+  5: "Combat",
+  6: "Foraging",
+  7: "Special",
+};
+
+const WEAPON_TYPE_LABELS: Record<number, string> = {
+  0: "None",
+  1: "Sword",
+  2: "Staff",
+  3: "Spear",
 };
 
 const TOOL_TYPE_LABELS: Record<number, string> = {
@@ -81,8 +94,16 @@ interface ItemDoc {
   bufferDuration?: number;
   damage?: number;
   critChance?: number;
-  attackSpeed?: number;
   weaponMaterialId?: string;
+  weaponType?: number;
+  tier?: number;
+  attackCooldown?: number;
+  knockbackForce?: number;
+  projectileSpeed?: number;
+  projectileRange?: number;
+  projectileKnockback?: number;
+  weaponPrefabKey?: string;
+  linkedSkillId?: string;
   difficulty?: number;
   fishingSeasons?: number[];
   isLegendary?: boolean;
@@ -114,6 +135,20 @@ const EMPTY: ItemDoc = {
   npcPreferenceNames: [],
   npcPreferenceReactions: [],
 };
+
+interface MaterialDoc {
+  materialId?: string;
+  materialName?: string;
+}
+
+interface CombatSkillDoc {
+  skillId: string;
+  skillName?: string;
+  ownership?: string;
+}
+
+// Backend enum: CombatManager.Model.WeaponType
+const STAFF_WEAPON_TYPE = 2;
 
 /* ───────── helper: build FormData ───────── */
 
@@ -164,8 +199,16 @@ function buildFormData(form: ItemDoc, iconFile: File | null): FormData {
   } else if (t === 6) {
     appendIfDefined(fd, "damage", form.damage);
     appendIfDefined(fd, "critChance", form.critChance);
-    appendIfDefined(fd, "attackSpeed", form.attackSpeed);
     appendIfDefined(fd, "weaponMaterialId", form.weaponMaterialId);
+    appendIfDefined(fd, "weaponType", form.weaponType);
+    appendIfDefined(fd, "tier", form.tier);
+    appendIfDefined(fd, "attackCooldown", form.attackCooldown);
+    appendIfDefined(fd, "knockbackForce", form.knockbackForce);
+    appendIfDefined(fd, "projectileSpeed", form.projectileSpeed);
+    appendIfDefined(fd, "projectileRange", form.projectileRange);
+    appendIfDefined(fd, "projectileKnockback", form.projectileKnockback);
+    appendIfDefined(fd, "weaponPrefabKey", form.weaponPrefabKey);
+    appendIfDefined(fd, "linkedSkillId", form.linkedSkillId);
   } else if (t === 7) {
     appendIfDefined(fd, "difficulty", form.difficulty);
     if (form.fishingSeasons && form.fishingSeasons.length > 0) {
@@ -214,6 +257,8 @@ function AdminItemManager() {
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState("");
   const [loading, setLoading] = useState(false);
+  const [materials, setMaterials] = useState<MaterialDoc[]>([]);
+  const [weaponSkills, setWeaponSkills] = useState<CombatSkillDoc[]>([]);
 
   /* ── fetch ── */
   const fetchItems = async () => {
@@ -225,8 +270,27 @@ function AdminItemManager() {
     }
   };
 
+  const fetchWeaponLookups = async () => {
+    try {
+      const [materialsRes, skillsRes] = await Promise.all([
+        materialApi.getMaterialCatalog(),
+        combatSkillApi.getAllCombatSkills(),
+      ]);
+
+      const materialData = materialsRes?.data;
+      setMaterials(Array.isArray(materialData) ? materialData : materialData?.materials || []);
+
+      const skillsData = skillsRes?.data;
+      const allSkills: CombatSkillDoc[] = Array.isArray(skillsData) ? skillsData : skillsData?.skills || [];
+      setWeaponSkills(allSkills.filter((s) => s?.ownership === "WeaponSkill"));
+    } catch (err) {
+      console.error("Failed to load weapon lookup data:", err);
+    }
+  };
+
   useEffect(() => {
     fetchItems();
+    fetchWeaponLookups();
   }, []);
 
   /* ── helpers ── */
@@ -277,6 +341,81 @@ function AdminItemManager() {
     if (!editingItemID && !iconFile) {
       Swal.fire({ icon: "warning", title: "Icon image is required for new items", background: "#020617", color: "#e5e7eb" });
       return;
+    }
+
+    if (Number(form.itemType) === 6) {
+      const requiredWeaponFields: Array<{ key: keyof ItemDoc; label: string }> = [
+        { key: "damage", label: "Damage" },
+        { key: "critChance", label: "Crit Chance" },
+        { key: "weaponMaterialId", label: "Weapon Material ID" },
+        { key: "weaponType", label: "Weapon Type" },
+        { key: "tier", label: "Tier" },
+        { key: "attackCooldown", label: "Attack Cooldown" },
+        { key: "knockbackForce", label: "Knockback Force" },
+        { key: "weaponPrefabKey", label: "Weapon Prefab Key" },
+      ];
+
+      const missing = requiredWeaponFields.find(({ key }) => {
+        const v = form[key];
+        return v === undefined || v === null || v === "";
+      });
+
+      if (missing) {
+        Swal.fire({
+          icon: "warning",
+          title: `${missing.label} is required for weapon items`,
+          background: "#020617",
+          color: "#e5e7eb",
+        });
+        return;
+      }
+
+      const isStaffWeapon = Number(form.weaponType) === STAFF_WEAPON_TYPE;
+      if (isStaffWeapon) {
+        const missingProjectileField = [
+          { key: "projectileSpeed", label: "Projectile Speed" },
+          { key: "projectileRange", label: "Projectile Range" },
+          { key: "projectileKnockback", label: "Projectile Knockback" },
+        ].find(({ key }) => {
+          const v = form[key as keyof ItemDoc];
+          return v === undefined || v === null || v === "";
+        });
+
+        if (missingProjectileField) {
+          Swal.fire({
+            icon: "warning",
+            title: `${missingProjectileField.label} is required for staff weapons`,
+            text: `Staff type is weaponType=${STAFF_WEAPON_TYPE}.`,
+            background: "#020617",
+            color: "#e5e7eb",
+          });
+          return;
+        }
+      }
+    }
+
+    if (form.linkedSkillId && Number(form.itemType) !== 6) {
+      Swal.fire({
+        icon: "warning",
+        title: "Linked Skill is only valid for weapon items",
+        background: "#020617",
+        color: "#e5e7eb",
+      });
+      return;
+    }
+
+    if (Number(form.itemType) === 6 && form.linkedSkillId) {
+      const matched = weaponSkills.find((s) => s.skillId === form.linkedSkillId);
+      if (!matched) {
+        Swal.fire({
+          icon: "warning",
+          title: "Invalid linked skill",
+          text: "Linked skill must exist and have ownership WeaponSkill.",
+          background: "#020617",
+          color: "#e5e7eb",
+        });
+        return;
+      }
     }
 
     try {
@@ -528,7 +667,21 @@ function AdminItemManager() {
                     <Field label="Item Type">
                       <select
                         value={form.itemType}
-                        onChange={(e) => set("itemType", Number(e.target.value))}
+                        onChange={(e) => {
+                          const nextType = Number(e.target.value);
+                          setForm((prev) => ({
+                            ...prev,
+                            itemType: nextType,
+                            ...(nextType === 6
+                              ? {
+                                  isStackable: false,
+                                  maxStack: 1,
+                                  itemCategory: 5,
+                                  weaponType: prev.weaponType ?? 1,
+                                }
+                              : {}),
+                          }));
+                        }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {Object.entries(ITEM_TYPE_LABELS).map(([k, v]) => (
@@ -602,6 +755,8 @@ function AdminItemManager() {
                   set={set}
                   setNum={setNum}
                   setBool={setBool}
+                  materials={materials}
+                  weaponSkills={weaponSkills}
                   toggleSeason={toggleSeason}
                   addCrossResult={addCrossResult}
                   removeCrossResult={removeCrossResult}
@@ -655,6 +810,8 @@ function TypeFields({
   set,
   setNum,
   setBool,
+  materials,
+  weaponSkills,
   toggleSeason,
   addCrossResult,
   removeCrossResult,
@@ -665,6 +822,8 @@ function TypeFields({
   set: <K extends keyof ItemDoc>(key: K, value: ItemDoc[K]) => void;
   setNum: (key: keyof ItemDoc, raw: string) => void;
   setBool: (key: keyof ItemDoc, checked: boolean) => void;
+  materials: MaterialDoc[];
+  weaponSkills: CombatSkillDoc[];
   toggleSeason: (key: "fishingSeasons" | "foragingSeasons", val: number) => void;
   addCrossResult: () => void;
   removeCrossResult: (idx: number) => void;
@@ -758,20 +917,95 @@ function TypeFields({
 
       {/* 6 – Weapon */}
       {itemType === 6 && (
-        <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
-          <Field label="Damage">
-            <Input type="number" value={form.damage ?? 10} onChange={(e) => setNum("damage", e.target.value)} min={0} />
-          </Field>
-          <Field label="Crit Chance %">
-            <Input type="number" value={form.critChance ?? 5} onChange={(e) => setNum("critChance", e.target.value)} min={0} max={100} />
-          </Field>
-          <Field label="Attack Speed">
-            <Input type="number" step="0.1" value={form.attackSpeed ?? 1.0} onChange={(e) => setNum("attackSpeed", e.target.value)} min={0} />
-          </Field>
-          <Field label="Material ID">
-            <Input value={form.weaponMaterialId ?? ""} onChange={(e) => set("weaponMaterialId", e.target.value)} placeholder="e.g. mat_steel" />
-          </Field>
-        </div>
+        <>
+          <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
+            <Field label="Damage *">
+              <Input type="number" value={form.damage ?? 10} onChange={(e) => setNum("damage", e.target.value)} min={0} />
+            </Field>
+            <Field label="Crit Chance % *">
+              <Input type="number" value={form.critChance ?? 5} onChange={(e) => setNum("critChance", e.target.value)} min={0} max={100} />
+            </Field>
+            <Field label="Weapon Material ID *">
+              <select
+                value={form.weaponMaterialId ?? ""}
+                onChange={(e) => set("weaponMaterialId", e.target.value)}
+                className={selectClass}
+              >
+                <option value="">Select material</option>
+                {materials.map((m) => {
+                  const materialId = m.materialId || "";
+                  if (!materialId) return null;
+                  return (
+                    <option key={materialId} value={materialId}>
+                      {materialId}{m.materialName ? ` - ${m.materialName}` : ""}
+                    </option>
+                  );
+                })}
+              </select>
+            </Field>
+          </div>
+
+          <div className="gap-3 grid grid-cols-2 sm:grid-cols-4">
+            <Field label="Weapon Type *">
+              <select
+                value={form.weaponType ?? 1}
+                onChange={(e) => set("weaponType", Number(e.target.value))}
+                className={selectClass}
+              >
+                {Object.entries(WEAPON_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v} ({k})
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Tier *">
+              <Input type="number" value={form.tier ?? 1} onChange={(e) => setNum("tier", e.target.value)} min={1} />
+            </Field>
+            <Field label="Attack Cooldown *">
+              <Input type="number" step="0.01" value={form.attackCooldown ?? 0.5} onChange={(e) => setNum("attackCooldown", e.target.value)} min={0} />
+            </Field>
+            <Field label="Knockback Force *">
+              <Input type="number" step="0.01" value={form.knockbackForce ?? 0} onChange={(e) => setNum("knockbackForce", e.target.value)} min={0} />
+            </Field>
+          </div>
+
+          <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+            <Field label="Weapon Prefab Key *">
+              <Input value={form.weaponPrefabKey ?? ""} onChange={(e) => set("weaponPrefabKey", e.target.value)} placeholder="e.g. weapon_sword_bronze" />
+            </Field>
+            <Field label="Linked Skill ID (WeaponSkill only)">
+              <select
+                value={form.linkedSkillId ?? ""}
+                onChange={(e) => set("linkedSkillId", e.target.value)}
+                className={selectClass}
+              >
+                <option value="">None</option>
+                {weaponSkills.map((s) => (
+                  <option key={s.skillId} value={s.skillId}>
+                    {s.skillId}{s.skillName ? ` - ${s.skillName}` : ""}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
+            <Field label="Projectile Speed (staff)">
+              <Input type="number" step="0.01" value={form.projectileSpeed ?? ""} onChange={(e) => setNum("projectileSpeed", e.target.value)} min={0} placeholder="Required for staff" />
+            </Field>
+            <Field label="Projectile Range (staff)">
+              <Input type="number" step="0.01" value={form.projectileRange ?? ""} onChange={(e) => setNum("projectileRange", e.target.value)} min={0} placeholder="Required for staff" />
+            </Field>
+            <Field label="Projectile Knockback (staff)">
+              <Input type="number" step="0.01" value={form.projectileKnockback ?? ""} onChange={(e) => setNum("projectileKnockback", e.target.value)} min={0} placeholder="Required for staff" />
+            </Field>
+          </div>
+
+          <p className="text-slate-400 text-xs">
+            Staff projectile fields are required when Weapon Type is Staff ({STAFF_WEAPON_TYPE}).
+          </p>
+        </>
       )}
 
       {/* 7 – Fish */}
