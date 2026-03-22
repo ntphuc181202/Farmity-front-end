@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import itemApi from "../../api/itemApi";
 import materialApi from "../../api/materialApi";
 import combatSkillApi from "../../api/combatSkillApi";
+import combatCatalogApi from "../../api/combatCatalogApi";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -102,7 +103,7 @@ interface ItemDoc {
   projectileSpeed?: number;
   projectileRange?: number;
   projectileKnockback?: number;
-  weaponPrefabKey?: string;
+  weaponVisualConfigId?: string;
   linkedSkillId?: string;
   difficulty?: number;
   fishingSeasons?: number[];
@@ -145,6 +146,12 @@ interface CombatSkillDoc {
   skillId: string;
   skillName?: string;
   ownership?: string;
+}
+
+interface CombatCatalogDoc {
+  configId: string;
+  displayName?: string;
+  type?: string;
 }
 
 // Backend enum: CombatManager.Model.WeaponType
@@ -207,7 +214,7 @@ function buildFormData(form: ItemDoc, iconFile: File | null): FormData {
     appendIfDefined(fd, "projectileSpeed", form.projectileSpeed);
     appendIfDefined(fd, "projectileRange", form.projectileRange);
     appendIfDefined(fd, "projectileKnockback", form.projectileKnockback);
-    appendIfDefined(fd, "weaponPrefabKey", form.weaponPrefabKey);
+    appendIfDefined(fd, "weaponVisualConfigId", form.weaponVisualConfigId);
     appendIfDefined(fd, "linkedSkillId", form.linkedSkillId);
   } else if (t === 7) {
     appendIfDefined(fd, "difficulty", form.difficulty);
@@ -259,6 +266,7 @@ function AdminItemManager() {
   const [loading, setLoading] = useState(false);
   const [materials, setMaterials] = useState<MaterialDoc[]>([]);
   const [weaponSkills, setWeaponSkills] = useState<CombatSkillDoc[]>([]);
+  const [combatConfigs, setCombatConfigs] = useState<CombatCatalogDoc[]>([]);
 
   /* ── fetch ── */
   const fetchItems = async () => {
@@ -283,6 +291,12 @@ function AdminItemManager() {
       const skillsData = skillsRes?.data;
       const allSkills: CombatSkillDoc[] = Array.isArray(skillsData) ? skillsData : skillsData?.skills || [];
       setWeaponSkills(allSkills.filter((s) => s?.ownership === "WeaponSkill"));
+
+      const combatConfigRes = await combatCatalogApi.getAllCombatCatalogs("weapon");
+      const rawCombatConfigs = Array.isArray(combatConfigRes?.data)
+        ? combatConfigRes.data
+        : combatConfigRes?.data?.entries || [];
+      setCombatConfigs(rawCombatConfigs.filter((s: CombatCatalogDoc) => !!s?.configId));
     } catch (err) {
       console.error("Failed to load weapon lookup data:", err);
     }
@@ -352,7 +366,7 @@ function AdminItemManager() {
         { key: "tier", label: "Tier" },
         { key: "attackCooldown", label: "Attack Cooldown" },
         { key: "knockbackForce", label: "Knockback Force" },
-        { key: "weaponPrefabKey", label: "Weapon Prefab Key" },
+        { key: "weaponVisualConfigId", label: "Weapon Visual Config ID" },
       ];
 
       const missing = requiredWeaponFields.find(({ key }) => {
@@ -756,6 +770,7 @@ function AdminItemManager() {
                   setNum={setNum}
                   setBool={setBool}
                   materials={materials}
+                  combatConfigs={combatConfigs}
                   weaponSkills={weaponSkills}
                   toggleSeason={toggleSeason}
                   addCrossResult={addCrossResult}
@@ -811,6 +826,7 @@ function TypeFields({
   setNum,
   setBool,
   materials,
+  combatConfigs,
   weaponSkills,
   toggleSeason,
   addCrossResult,
@@ -823,6 +839,7 @@ function TypeFields({
   setNum: (key: keyof ItemDoc, raw: string) => void;
   setBool: (key: keyof ItemDoc, checked: boolean) => void;
   materials: MaterialDoc[];
+  combatConfigs: CombatCatalogDoc[];
   weaponSkills: CombatSkillDoc[];
   toggleSeason: (key: "fishingSeasons" | "foragingSeasons", val: number) => void;
   addCrossResult: () => void;
@@ -971,8 +988,21 @@ function TypeFields({
           </div>
 
           <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
-            <Field label="Weapon Prefab Key *">
-              <Input value={form.weaponPrefabKey ?? ""} onChange={(e) => set("weaponPrefabKey", e.target.value)} placeholder="e.g. weapon_sword_bronze" />
+            <Field label="Weapon Visual Config ID *">
+              <select
+                value={form.weaponVisualConfigId ?? ""}
+                onChange={(e) => set("weaponVisualConfigId", e.target.value)}
+                className={selectClass}
+              >
+                <option value="">Select skin config ID</option>
+                {combatConfigs.map((s) => (
+                  <option key={s.configId} value={s.configId}>
+                    {s.configId}
+                    {s.displayName ? ` - ${s.displayName}` : ""}
+                    {s.type ? ` (${s.type})` : ""}
+                  </option>
+                ))}
+              </select>
             </Field>
             <Field label="Linked Skill ID (WeaponSkill only)">
               <select

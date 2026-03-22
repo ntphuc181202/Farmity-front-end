@@ -22,6 +22,7 @@ import RecipesAdminPage from "./pages/admin/recipes/RecipesAdminPage";
 import PlantsAdminPage from "./pages/admin/plants/PlantsAdminPage";
 import MainMenuConfigPage from "./pages/admin/game-config/MainMenuConfigPage";
 import SkinConfigPage from "./pages/admin/game-config/SkinConfigPage";
+import CombatConfigPage from "./pages/admin/game-config/CombatConfigPage";
 import MaterialsAdminPage from "./pages/admin/materials/MaterialsAdminPage";
 import ResourceConfigsAdminPage from "./pages/admin/ResourceConfigsAdminPage";
 import AchievementsAdminPage from "./pages/admin/achievements/AchievementsAdminPage";
@@ -88,6 +89,7 @@ function App() {
           <Route path="plants" element={<PlantsAdminPage />} />
           <Route path="main-menu" element={<MainMenuConfigPage />} />
           <Route path="skin-configs" element={<SkinConfigPage />} />
+          <Route path="combat-configs" element={<CombatConfigPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
           <Route
             path="resource-configs"

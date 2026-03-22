@@ -91,6 +91,12 @@ function AdminLayout() {
             </span>
             <span>Skin Configs</span>
           </NavLink>
+          <NavLink to="/admin/combat-configs" className={linkClass}>
+            <span className="inline-flex justify-center items-center bg-rose-500/10 rounded-md w-6 h-6 font-semibold text-rose-300 text-xs">
+              Cc
+            </span>
+            <span>Combat Configs</span>
+          </NavLink>
           <NavLink to="/admin/materials" className={linkClass}>
             <span className="inline-flex justify-center items-center bg-orange-500/10 rounded-md w-6 h-6 font-semibold text-orange-400 text-xs">
               Mt
@@ -269,6 +275,16 @@ function AdminLayout() {
                     S
                   </span>
                   <span>Skin Configs</span>
+                </NavLink>
+                <NavLink
+                  to="/admin/combat-configs"
+                  onClick={() => setMobileNavOpen(false)}
+                  className={linkClass}
+                >
+                  <span className="inline-flex justify-center items-center bg-rose-500/10 rounded-md w-6 h-6 font-semibold text-rose-300 text-xs">
+                    Cc
+                  </span>
+                  <span>Combat Configs</span>
                 </NavLink>
                 <NavLink
                   to="/admin/materials"
