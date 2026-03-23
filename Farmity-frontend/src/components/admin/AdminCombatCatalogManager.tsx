@@ -13,16 +13,31 @@ interface CombatCatalogDoc {
   type: string;
   cellSize: number;
   spritesheetUrl?: string;
+  primaryColorHex?: string;
+  secondaryColorHex?: string;
+  colorIntensity?: number;
+  tintAlpha?: number;
 }
 
 const TYPE_OPTIONS = ["weapon", "skill_vfx"] as const;
+const SKILL_VFX_TYPE = "skill_vfx";
 
 const EMPTY: CombatCatalogDoc = {
   configId: "",
   displayName: "",
   type: "weapon",
   cellSize: 64,
+  primaryColorHex: "",
+  secondaryColorHex: "",
+  colorIntensity: 1,
+  tintAlpha: 1,
 };
+
+const HEX_COLOR_PATTERN = /^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
+
+function isSkillVfx(type?: string) {
+  return (type || "weapon") === SKILL_VFX_TYPE;
+}
 
 function AdminCombatCatalogManager() {
   const [entries, setEntries] = useState<CombatCatalogDoc[]>([]);
@@ -90,8 +105,40 @@ function AdminCombatCatalogManager() {
       return;
     }
 
-    if (!editingConfigId && !spritesheetFile) {
-      Swal.fire({ icon: "warning", title: "Spritesheet is required for new combat configs", background: "#020617", color: "#e5e7eb" });
+    const nextType = form.type || "weapon";
+    const usingSkillVfx = isSkillVfx(nextType);
+    const primaryColorHex = (form.primaryColorHex || "").trim();
+    const secondaryColorHex = (form.secondaryColorHex || "").trim();
+
+    if (!editingConfigId && !usingSkillVfx && !spritesheetFile) {
+      Swal.fire({ icon: "warning", title: "Spritesheet is required for new non-skill_vfx configs", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    if (usingSkillVfx && !primaryColorHex) {
+      Swal.fire({ icon: "warning", title: "Primary Color Hex is required for skill_vfx", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    if (primaryColorHex && !HEX_COLOR_PATTERN.test(primaryColorHex)) {
+      Swal.fire({ icon: "warning", title: "Primary Color Hex is invalid", text: "Use hex format like #FF7A00.", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    if (secondaryColorHex && !HEX_COLOR_PATTERN.test(secondaryColorHex)) {
+      Swal.fire({ icon: "warning", title: "Secondary Color Hex is invalid", text: "Use hex format like #4CC9F0.", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    const tintAlpha = Number(form.tintAlpha ?? 1);
+    if (!Number.isFinite(tintAlpha) || tintAlpha < 0 || tintAlpha > 1) {
+      Swal.fire({ icon: "warning", title: "Tint Alpha must be between 0 and 1", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    const colorIntensity = Number(form.colorIntensity ?? 1);
+    if (!Number.isFinite(colorIntensity) || colorIntensity < 0) {
+      Swal.fire({ icon: "warning", title: "Color Intensity must be a non-negative number", background: "#020617", color: "#e5e7eb" });
       return;
     }
 
@@ -99,10 +146,16 @@ function AdminCombatCatalogManager() {
       setLoading(true);
       const fd = new FormData();
       if (spritesheetFile) fd.append("spritesheet", spritesheetFile);
-      fd.append("configId", form.configId.trim());
+      if (!editingConfigId) {
+        fd.append("configId", form.configId.trim());
+      }
       fd.append("displayName", form.displayName.trim());
-      fd.append("type", form.type || "weapon");
+      fd.append("type", nextType);
       fd.append("cellSize", String(form.cellSize || 64));
+      if (primaryColorHex) fd.append("primaryColorHex", primaryColorHex);
+      if (secondaryColorHex) fd.append("secondaryColorHex", secondaryColorHex);
+      fd.append("colorIntensity", String(colorIntensity));
+      fd.append("tintAlpha", String(tintAlpha));
 
       if (editingConfigId) {
         await combatCatalogApi.updateCombatCatalog(editingConfigId, fd);
@@ -160,6 +213,7 @@ function AdminCombatCatalogManager() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const isSkillVfxForm = isSkillVfx(form.type);
 
   return (
     <div className="space-y-6">
@@ -209,13 +263,20 @@ function AdminCombatCatalogManager() {
             <div key={entry.configId} className="flex items-center gap-4 hover:bg-slate-800/40 px-6 py-3 transition-colors">
               {entry.spritesheetUrl ? (
                 <img src={entry.spritesheetUrl} alt={entry.displayName} className="bg-slate-800 rounded-md w-10 h-10 object-contain shrink-0 pixel-art" />
+              ) : isSkillVfx(entry.type) ? (
+                <div
+                  className="border border-slate-700 rounded-md w-10 h-10 shrink-0"
+                  style={{ backgroundColor: entry.primaryColorHex || "#334155" }}
+                  title={entry.primaryColorHex || "No primary color"}
+                />
               ) : (
                 <div className="bg-slate-800 rounded-md w-10 h-10 shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-white truncate">{entry.displayName}</p>
                 <p className="text-slate-400 text-xs truncate">
-                  {entry.configId} · {entry.type || "weapon"} · {entry.cellSize}px
+                  {entry.configId} · {entry.type || "weapon"}
+                  {!isSkillVfx(entry.type) ? ` · ${entry.cellSize ?? 64}px` : ""}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -267,7 +328,16 @@ function AdminCombatCatalogManager() {
                     <Field label="Type">
                       <select
                         value={form.type || "weapon"}
-                        onChange={(e) => set("type", e.target.value)}
+                        onChange={(e) => {
+                          const nextType = e.target.value;
+                          set("type", nextType);
+                          if (nextType !== SKILL_VFX_TYPE) {
+                            set("primaryColorHex", "");
+                            set("secondaryColorHex", "");
+                            set("colorIntensity", 1);
+                            set("tintAlpha", 1);
+                          }
+                        }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {TYPE_OPTIONS.map((t) => (
@@ -278,17 +348,34 @@ function AdminCombatCatalogManager() {
                       </select>
                     </Field>
                     <Field label="Cell Size">
-                      <Input type="number" min={1} value={form.cellSize ?? 64} onChange={(e) => set("cellSize", Number(e.target.value) || 64)} />
+                      <Input type="number" min={1} value={form.cellSize ?? 64} onChange={(e) => set("cellSize", Number(e.target.value) || 64)} disabled={isSkillVfxForm} />
                     </Field>
                   </div>
 
-                  <Field label={editingConfigId ? "Spritesheet (optional, replaces current)" : "Spritesheet *"}>
-                    <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-24 transition cursor-pointer">
-                      <span className="text-slate-400 text-sm">{spritesheetFile ? spritesheetFile.name : "Click to select spritesheet image"}</span>
-                      <input type="file" accept="image/png,image/*" onChange={handleSpritesheetPick} className="hidden" />
-                    </label>
-                    {spritesheetPreview && <img src={spritesheetPreview} alt="spritesheet preview" className="bg-slate-800 mt-2 rounded-md w-16 h-16 object-contain pixel-art" />}
-                  </Field>
+                  {!isSkillVfxForm ? (
+                    <Field label={editingConfigId ? "Spritesheet (optional, replaces current)" : "Spritesheet *"}>
+                      <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-24 transition cursor-pointer">
+                        <span className="text-slate-400 text-sm">{spritesheetFile ? spritesheetFile.name : "Click to select spritesheet image"}</span>
+                        <input type="file" accept="image/png,image/*" onChange={handleSpritesheetPick} className="hidden" />
+                      </label>
+                      {spritesheetPreview && <img src={spritesheetPreview} alt="spritesheet preview" className="bg-slate-800 mt-2 rounded-md w-16 h-16 object-contain pixel-art" />}
+                    </Field>
+                  ) : (
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+                      <Field label="Primary Color Hex *">
+                        <Input value={form.primaryColorHex || ""} onChange={(e) => set("primaryColorHex", e.target.value)} placeholder="#FF7A00" />
+                      </Field>
+                      <Field label="Secondary Color Hex">
+                        <Input value={form.secondaryColorHex || ""} onChange={(e) => set("secondaryColorHex", e.target.value)} placeholder="#4CC9F0" />
+                      </Field>
+                      <Field label="Color Intensity">
+                        <Input type="number" min={0} step="0.01" value={form.colorIntensity ?? 1} onChange={(e) => set("colorIntensity", Number(e.target.value) || 0)} />
+                      </Field>
+                      <Field label="Tint Alpha (0..1)">
+                        <Input type="number" min={0} max={1} step="0.01" value={form.tintAlpha ?? 1} onChange={(e) => set("tintAlpha", Number(e.target.value))} />
+                      </Field>
+                    </div>
+                  )}
                 </section>
               </form>
             </div>

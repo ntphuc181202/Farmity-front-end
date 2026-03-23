@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, FormEvent, ChangeEvent } from "react";
 import Swal from "sweetalert2";
 import combatSkillApi from "../../api/combatSkillApi";
+import combatCatalogApi from "../../api/combatCatalogApi";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -20,13 +21,19 @@ interface CombatSkillDoc {
   projectileSpeed?: number;
   projectileRange?: number;
   projectileKnockback?: number;
-  slashVfxKey?: string;
+  skillVisualConfigId?: string;
   slashVfxDuration?: number;
   slashVfxSpawnOffset?: number;
   slashVfxPositionOffsetX?: number;
   slashVfxPositionOffsetY?: number;
   slashKnockbackForce?: number;
   iconUrl?: string;
+}
+
+interface CombatCatalogDoc {
+  configId: string;
+  displayName?: string;
+  type?: string;
 }
 
 interface CatalogEnums {
@@ -62,7 +69,7 @@ const EMPTY_SKILL: CombatSkillDoc = {
   projectileSpeed: 0,
   projectileRange: 0,
   projectileKnockback: 0,
-  slashVfxKey: "",
+  skillVisualConfigId: "",
   slashVfxDuration: 0,
   slashVfxSpawnOffset: 0,
   slashVfxPositionOffsetX: 0,
@@ -107,6 +114,7 @@ function AdminCombatSkillManager() {
   const [form, setForm] = useState<CombatSkillDoc>({ ...EMPTY_SKILL });
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState("");
+  const [skillVfxConfigs, setSkillVfxConfigs] = useState<CombatCatalogDoc[]>([]);
   const [loading, setLoading] = useState(false);
 
   const pageSize = 10;
@@ -141,9 +149,20 @@ function AdminCombatSkillManager() {
     }
   };
 
+  const fetchSkillVfxConfigs = async () => {
+    try {
+      const res = await combatCatalogApi.getAllCombatCatalogs("skill_vfx");
+      const data = Array.isArray(res.data) ? res.data : res.data?.entries || [];
+      setSkillVfxConfigs(data.filter((entry: CombatCatalogDoc) => !!entry?.configId));
+    } catch (err) {
+      console.error("Failed to load skill_vfx combat catalogs:", err);
+    }
+  };
+
   useEffect(() => {
     fetchSkills();
     fetchCatalogEnums();
+    fetchSkillVfxConfigs();
   }, []);
 
   const resetForm = () => {
@@ -191,6 +210,17 @@ function AdminCombatSkillManager() {
 
     if (!editingSkillId && !iconFile) {
       Swal.fire({ icon: "warning", title: "Icon image is required for new combat skills", background: "#020617", color: "#e5e7eb" });
+      return;
+    }
+
+    if (!editingSkillId && !(form.skillVisualConfigId || "").trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "Skill Visual Config is required for new combat skills",
+        text: "Create/select a combat catalog entry with type skill_vfx.",
+        background: "#020617",
+        color: "#e5e7eb",
+      });
       return;
     }
 
@@ -482,6 +512,21 @@ function AdminCombatSkillManager() {
                       </select>
                     </Field>
                   </div>
+
+                  <Field label="Skill Visual Config (skill_vfx)">
+                    <select
+                      value={form.skillVisualConfigId || ""}
+                      onChange={(e) => set("skillVisualConfigId", e.target.value)}
+                      className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
+                    >
+                      <option value="">Select skill_vfx config</option>
+                      {skillVfxConfigs.map((cfg) => (
+                        <option key={cfg.configId} value={cfg.configId}>
+                          {cfg.displayName || cfg.configId} ({cfg.configId})
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
                 </section>
 
                 {showProjectile && (
@@ -510,9 +555,6 @@ function AdminCombatSkillManager() {
                   <section className="space-y-3 pt-2 border-slate-800 border-t">
                     <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">Slash Fields</h3>
                     <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
-                      <Field label="Slash VFX Key">
-                        <Input value={form.slashVfxKey || ""} onChange={(e) => set("slashVfxKey", e.target.value)} placeholder="slash_vfx_default" />
-                      </Field>
                       <Field label="Slash VFX Duration">
                         <Input type="number" value={form.slashVfxDuration ?? 0} onChange={(e) => setNum("slashVfxDuration", e.target.value)} min={0} step="0.01" />
                       </Field>
