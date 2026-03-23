@@ -1,9 +1,15 @@
 import axiosClient from "./axiosClient";
 
 const itemApi = {
-  // Get all items: GET /game-data/items/all
+  // Get full item catalog: GET /game-data/items/catalog
   getAllItems: () => {
-    return axiosClient.get("/game-data/items/all");
+    return axiosClient.get("/game-data/items/catalog").then((res) => {
+      const data = res?.data;
+      const items = Array.isArray(data)
+        ? data
+        : data?.items || data?.catalog || data?.data || [];
+      return { ...res, data: items };
+    });
   },
 
   // Get item by game-side itemID: GET /game-data/items/by-item-id/:itemID

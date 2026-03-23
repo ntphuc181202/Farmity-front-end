@@ -1,24 +1,20 @@
 import axiosClient from "./axiosClient";
 
 const combatCatalogApi = {
-  // Get combat catalogs: GET /game-data/combat-catalogs?type=weapon
+  // Get combat catalogs: GET /game-data/combat-catalogs?type=skill_vfx
   getAllCombatCatalogs: (type) => {
     const params = type ? { type } : {};
     return axiosClient.get("/game-data/combat-catalogs", { params });
   },
 
-  // Create combat catalog: POST /game-data/combat-catalogs (multipart/form-data)
-  createCombatCatalog: (formData) => {
-    return axiosClient.post("/game-data/combat-catalogs", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+  // Create combat catalog: POST /game-data/combat-catalogs (application/json)
+  createCombatCatalog: (payload) => {
+    return axiosClient.post("/game-data/combat-catalogs", payload);
   },
 
-  // Update combat catalog: PUT /game-data/combat-catalogs/:configId (multipart/form-data)
-  updateCombatCatalog: (configId, formData) => {
-    return axiosClient.put(`/game-data/combat-catalogs/${configId}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+  // Update combat catalog: PUT /game-data/combat-catalogs/:configId (application/json)
+  updateCombatCatalog: (configId, payload) => {
+    return axiosClient.put(`/game-data/combat-catalogs/${configId}`, payload);
   },
 
   // Delete combat catalog: DELETE /game-data/combat-catalogs/:configId

@@ -11,22 +11,18 @@ interface CombatCatalogDoc {
   configId: string;
   displayName: string;
   type: string;
-  cellSize: number;
-  spritesheetUrl?: string;
   primaryColorHex?: string;
   secondaryColorHex?: string;
   colorIntensity?: number;
   tintAlpha?: number;
 }
 
-const TYPE_OPTIONS = ["weapon", "skill_vfx"] as const;
 const SKILL_VFX_TYPE = "skill_vfx";
 
 const EMPTY: CombatCatalogDoc = {
   configId: "",
   displayName: "",
-  type: "weapon",
-  cellSize: 64,
+  type: SKILL_VFX_TYPE,
   primaryColorHex: "",
   secondaryColorHex: "",
   colorIntensity: 1,
@@ -35,27 +31,20 @@ const EMPTY: CombatCatalogDoc = {
 
 const HEX_COLOR_PATTERN = /^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
 
-function isSkillVfx(type?: string) {
-  return (type || "weapon") === SKILL_VFX_TYPE;
-}
-
 function AdminCombatCatalogManager() {
   const [entries, setEntries] = useState<CombatCatalogDoc[]>([]);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
   const [form, setForm] = useState<CombatCatalogDoc>({ ...EMPTY });
-  const [spritesheetFile, setSpritesheetFile] = useState<File | null>(null);
-  const [spritesheetPreview, setSpritesheetPreview] = useState("");
   const [loading, setLoading] = useState(false);
 
   const fetchEntries = async () => {
     try {
-      const res = await combatCatalogApi.getAllCombatCatalogs();
+      const res = await combatCatalogApi.getAllCombatCatalogs(SKILL_VFX_TYPE);
       setEntries(Array.isArray(res.data) ? res.data : res.data?.entries || []);
     } catch (err) {
       console.error("Failed to load combat catalogs:", err);
@@ -68,8 +57,6 @@ function AdminCombatCatalogManager() {
 
   const resetForm = () => {
     setForm({ ...EMPTY });
-    setSpritesheetFile(null);
-    setSpritesheetPreview("");
     setEditingConfigId(null);
   };
 
@@ -79,22 +66,21 @@ function AdminCombatCatalogManager() {
   };
 
   const openEdit = (entry: CombatCatalogDoc) => {
-    setForm({ ...entry });
-    setSpritesheetFile(null);
-    setSpritesheetPreview(entry.spritesheetUrl || "");
+    setForm({
+      ...EMPTY,
+      ...entry,
+      type: SKILL_VFX_TYPE,
+      primaryColorHex: entry.primaryColorHex || "",
+      secondaryColorHex: entry.secondaryColorHex || "",
+      colorIntensity: Number(entry.colorIntensity ?? 1),
+      tintAlpha: Number(entry.tintAlpha ?? 1),
+    });
     setEditingConfigId(entry.configId);
     setIsModalOpen(true);
   };
 
   const set = <K extends keyof CombatCatalogDoc>(key: K, value: CombatCatalogDoc[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSpritesheetPick = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSpritesheetFile(file);
-    setSpritesheetPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e?: FormEvent) => {
@@ -105,17 +91,11 @@ function AdminCombatCatalogManager() {
       return;
     }
 
-    const nextType = form.type || "weapon";
-    const usingSkillVfx = isSkillVfx(nextType);
+    const nextType = SKILL_VFX_TYPE;
     const primaryColorHex = (form.primaryColorHex || "").trim();
     const secondaryColorHex = (form.secondaryColorHex || "").trim();
 
-    if (!editingConfigId && !usingSkillVfx && !spritesheetFile) {
-      Swal.fire({ icon: "warning", title: "Spritesheet is required for new non-skill_vfx configs", background: "#020617", color: "#e5e7eb" });
-      return;
-    }
-
-    if (usingSkillVfx && !primaryColorHex) {
+    if (!primaryColorHex) {
       Swal.fire({ icon: "warning", title: "Primary Color Hex is required for skill_vfx", background: "#020617", color: "#e5e7eb" });
       return;
     }
@@ -137,31 +117,30 @@ function AdminCombatCatalogManager() {
     }
 
     const colorIntensity = Number(form.colorIntensity ?? 1);
-    if (!Number.isFinite(colorIntensity) || colorIntensity < 0) {
-      Swal.fire({ icon: "warning", title: "Color Intensity must be a non-negative number", background: "#020617", color: "#e5e7eb" });
+    if (!Number.isFinite(colorIntensity) || colorIntensity < 0 || colorIntensity > 4) {
+      Swal.fire({ icon: "warning", title: "Color Intensity must be between 0 and 4", background: "#020617", color: "#e5e7eb" });
       return;
     }
 
     try {
       setLoading(true);
-      const fd = new FormData();
-      if (spritesheetFile) fd.append("spritesheet", spritesheetFile);
-      if (!editingConfigId) {
-        fd.append("configId", form.configId.trim());
-      }
-      fd.append("displayName", form.displayName.trim());
-      fd.append("type", nextType);
-      fd.append("cellSize", String(form.cellSize || 64));
-      if (primaryColorHex) fd.append("primaryColorHex", primaryColorHex);
-      if (secondaryColorHex) fd.append("secondaryColorHex", secondaryColorHex);
-      fd.append("colorIntensity", String(colorIntensity));
-      fd.append("tintAlpha", String(tintAlpha));
+      const payload: Record<string, string | number> = {
+        displayName: form.displayName.trim(),
+        type: nextType,
+        primaryColorHex,
+        secondaryColorHex,
+        colorIntensity,
+        tintAlpha,
+      };
 
       if (editingConfigId) {
-        await combatCatalogApi.updateCombatCatalog(editingConfigId, fd);
+        await combatCatalogApi.updateCombatCatalog(editingConfigId, payload);
         Swal.fire({ toast: true, icon: "success", title: "Combat config updated", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
       } else {
-        await combatCatalogApi.createCombatCatalog(fd);
+        await combatCatalogApi.createCombatCatalog({
+          configId: form.configId.trim(),
+          ...payload,
+        });
         Swal.fire({ toast: true, icon: "success", title: "Combat config created", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
       }
 
@@ -206,14 +185,12 @@ function AdminCombatCatalogManager() {
       entry.configId.toLowerCase().includes(t) ||
       entry.displayName.toLowerCase().includes(t) ||
       (entry.type || "").toLowerCase().includes(t);
-    const matchType = typeFilter === "all" || entry.type === typeFilter;
-    return matchText && matchType;
+    return matchText;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const isSkillVfxForm = isSkillVfx(form.type);
 
   return (
     <div className="space-y-6">
@@ -237,21 +214,6 @@ function AdminCombatCatalogManager() {
               }}
               className="flex-1 min-w-[180px]"
             />
-            <select
-              value={typeFilter}
-              onChange={(e) => {
-                setTypeFilter(e.target.value);
-                setPage(1);
-              }}
-              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
-            >
-              <option value="all">All Types</option>
-              {TYPE_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
           </div>
         </CardHeader>
 
@@ -261,22 +223,15 @@ function AdminCombatCatalogManager() {
           )}
           {visible.map((entry) => (
             <div key={entry.configId} className="flex items-center gap-4 hover:bg-slate-800/40 px-6 py-3 transition-colors">
-              {entry.spritesheetUrl ? (
-                <img src={entry.spritesheetUrl} alt={entry.displayName} className="bg-slate-800 rounded-md w-10 h-10 object-contain shrink-0 pixel-art" />
-              ) : isSkillVfx(entry.type) ? (
-                <div
-                  className="border border-slate-700 rounded-md w-10 h-10 shrink-0"
-                  style={{ backgroundColor: entry.primaryColorHex || "#334155" }}
-                  title={entry.primaryColorHex || "No primary color"}
-                />
-              ) : (
-                <div className="bg-slate-800 rounded-md w-10 h-10 shrink-0" />
-              )}
+              <div
+                className="border border-slate-700 rounded-md w-10 h-10 shrink-0"
+                style={{ backgroundColor: entry.primaryColorHex || "#334155" }}
+                title={entry.primaryColorHex || "No primary color"}
+              />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-white truncate">{entry.displayName}</p>
                 <p className="text-slate-400 text-xs truncate">
-                  {entry.configId} · {entry.type || "weapon"}
-                  {!isSkillVfx(entry.type) ? ` · ${entry.cellSize ?? 64}px` : ""}
+                  {entry.configId} · {entry.type || SKILL_VFX_TYPE}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -317,7 +272,7 @@ function AdminCombatCatalogManager() {
                   <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">Base Fields</h3>
                   <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                     <Field label="Config ID *">
-                      <Input value={form.configId} onChange={(e) => set("configId", e.target.value)} placeholder="e.g. weapon_sword_iron" disabled={!!editingConfigId} />
+                      <Input value={form.configId} onChange={(e) => set("configId", e.target.value)} placeholder="e.g. skill_slash_fire" disabled={!!editingConfigId} />
                     </Field>
                     <Field label="Display Name *">
                       <Input value={form.displayName} onChange={(e) => set("displayName", e.target.value)} placeholder="Display name" />
@@ -326,56 +281,24 @@ function AdminCombatCatalogManager() {
 
                   <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                     <Field label="Type">
-                      <select
-                        value={form.type || "weapon"}
-                        onChange={(e) => {
-                          const nextType = e.target.value;
-                          set("type", nextType);
-                          if (nextType !== SKILL_VFX_TYPE) {
-                            set("primaryColorHex", "");
-                            set("secondaryColorHex", "");
-                            set("colorIntensity", 1);
-                            set("tintAlpha", 1);
-                          }
-                        }}
-                        className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
-                      >
-                        {TYPE_OPTIONS.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                    </Field>
-                    <Field label="Cell Size">
-                      <Input type="number" min={1} value={form.cellSize ?? 64} onChange={(e) => set("cellSize", Number(e.target.value) || 64)} disabled={isSkillVfxForm} />
+                      <Input value={SKILL_VFX_TYPE} disabled />
                     </Field>
                   </div>
 
-                  {!isSkillVfxForm ? (
-                    <Field label={editingConfigId ? "Spritesheet (optional, replaces current)" : "Spritesheet *"}>
-                      <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-24 transition cursor-pointer">
-                        <span className="text-slate-400 text-sm">{spritesheetFile ? spritesheetFile.name : "Click to select spritesheet image"}</span>
-                        <input type="file" accept="image/png,image/*" onChange={handleSpritesheetPick} className="hidden" />
-                      </label>
-                      {spritesheetPreview && <img src={spritesheetPreview} alt="spritesheet preview" className="bg-slate-800 mt-2 rounded-md w-16 h-16 object-contain pixel-art" />}
+                  <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+                    <Field label="Primary Color Hex *">
+                      <Input value={form.primaryColorHex || ""} onChange={(e) => set("primaryColorHex", e.target.value)} placeholder="#FF7A00" />
                     </Field>
-                  ) : (
-                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
-                      <Field label="Primary Color Hex *">
-                        <Input value={form.primaryColorHex || ""} onChange={(e) => set("primaryColorHex", e.target.value)} placeholder="#FF7A00" />
-                      </Field>
-                      <Field label="Secondary Color Hex">
-                        <Input value={form.secondaryColorHex || ""} onChange={(e) => set("secondaryColorHex", e.target.value)} placeholder="#4CC9F0" />
-                      </Field>
-                      <Field label="Color Intensity">
-                        <Input type="number" min={0} step="0.01" value={form.colorIntensity ?? 1} onChange={(e) => set("colorIntensity", Number(e.target.value) || 0)} />
-                      </Field>
-                      <Field label="Tint Alpha (0..1)">
-                        <Input type="number" min={0} max={1} step="0.01" value={form.tintAlpha ?? 1} onChange={(e) => set("tintAlpha", Number(e.target.value))} />
-                      </Field>
-                    </div>
-                  )}
+                    <Field label="Secondary Color Hex">
+                      <Input value={form.secondaryColorHex || ""} onChange={(e) => set("secondaryColorHex", e.target.value)} placeholder="#4CC9F0" />
+                    </Field>
+                    <Field label="Color Intensity (0..4)">
+                      <Input type="number" min={0} max={4} step="0.01" value={form.colorIntensity ?? 1} onChange={(e) => set("colorIntensity", Number(e.target.value) || 0)} />
+                    </Field>
+                    <Field label="Tint Alpha (0..1)">
+                      <Input type="number" min={0} max={1} step="0.01" value={form.tintAlpha ?? 1} onChange={(e) => set("tintAlpha", Number(e.target.value))} />
+                    </Field>
+                  </div>
                 </section>
               </form>
             </div>
