@@ -17,7 +17,6 @@ interface CombatSkillDoc {
   cooldown?: number;
   diceTier?: string;
   skillMultiplier?: number;
-  projectilePrefabKey?: string;
   projectileSpeed?: number;
   projectileRange?: number;
   projectileKnockback?: number;
@@ -65,7 +64,6 @@ const EMPTY_SKILL: CombatSkillDoc = {
   cooldown: 0,
   diceTier: "D6",
   skillMultiplier: 1,
-  projectilePrefabKey: "",
   projectileSpeed: 0,
   projectileRange: 0,
   projectileKnockback: 0,
@@ -86,6 +84,7 @@ function buildFormData(form: CombatSkillDoc, iconFile: File | null, editing: boo
 
   const payload: Record<string, unknown> = { ...form };
   delete payload.iconUrl;
+  delete payload.projectilePrefabKey;
 
   if (editing) {
     delete payload.skillId;
@@ -532,11 +531,6 @@ function AdminCombatSkillManager() {
                 {showProjectile && (
                   <section className="space-y-3 pt-2 border-slate-800 border-t">
                     <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">Projectile Fields</h3>
-                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
-                      <Field label="Projectile Prefab Key">
-                        <Input value={form.projectilePrefabKey || ""} onChange={(e) => set("projectilePrefabKey", e.target.value)} placeholder="projectile_arrow" />
-                      </Field>
-                    </div>
                     <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
                       <Field label="Projectile Speed">
                         <Input type="number" value={form.projectileSpeed ?? 0} onChange={(e) => setNum("projectileSpeed", e.target.value)} min={0} step="0.01" />
