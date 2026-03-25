@@ -70,7 +70,7 @@ function parseDateInputValue(value: string) {
 function formatDateDisplay(value: string) {
   const d = parseDateInputValue(value);
   if (!d) return "Select date";
-  return `${String(d.getUTCMonth() + 1).padStart(2, "0")}/${String(d.getUTCDate()).padStart(2, "0")}/${d.getUTCFullYear()}`;
+  return `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
 }
 
 function isSameUtcDate(a: Date, b: Date) {
@@ -112,7 +112,7 @@ function buildDailyWindows(startUtcIso: string, endUtcIso: string) {
     ranges.push({
       start: cursor.toISOString(),
       end: next.toISOString(),
-      label: `${String(cursor.getUTCMonth() + 1).padStart(2, "0")}/${String(cursor.getUTCDate()).padStart(2, "0")}`,
+      label: `${String(cursor.getUTCDate()).padStart(2, "0")}/${String(cursor.getUTCMonth() + 1).padStart(2, "0")}`,
     });
     cursor = next;
   }
@@ -295,9 +295,8 @@ function AdminAnalyticsDashboard() {
         </CardContent>
       </Card>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2">
         <MetricCard title="Total Users" value={overview?.totalUsers} colorClass="text-sky-300" />
-        <MetricCard title="Daily Active Users" value={overview?.dailyActiveUsers} colorClass="text-emerald-300" />
         <MetricCard title="Concurrent Players" value={overview?.concurrentPlayers} colorClass="text-amber-300" />
       </section>
 
