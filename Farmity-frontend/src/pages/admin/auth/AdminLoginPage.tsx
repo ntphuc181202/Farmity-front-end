@@ -8,6 +8,7 @@ import { Card, CardContent } from "../../../components/ui/card";
 import Swal from "sweetalert2";
 
 function AdminLoginPage() {
+  const CONFLICT_MESSAGE = "This account is already logged in on another device.";
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -64,9 +65,32 @@ function AdminLoginPage() {
 
         navigate("/admin/blog", { replace: true });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login failed", err);
-      setError("Login failed. Please check your credentials.");
+
+      const status = err?.response?.status;
+      const statusCode = err?.response?.data?.statusCode;
+      const rawMessage = err?.response?.data?.message;
+      const backendMessage = Array.isArray(rawMessage)
+        ? rawMessage.join(" ")
+        : typeof rawMessage === "string"
+          ? rawMessage
+          : "";
+      const normalizedMessage = backendMessage.toLowerCase();
+      const isConflictError =
+        status === 409 ||
+        statusCode === 409 ||
+        normalizedMessage.includes("already logged in on another device");
+
+      if (isConflictError) {
+        setError(CONFLICT_MESSAGE);
+      } else if (status === 401 || statusCode === 401) {
+        setError("Invalid username or password.");
+      } else if (!err?.response) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError("Login failed. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }

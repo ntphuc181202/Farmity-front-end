@@ -15,7 +15,7 @@ import analyticsApi from "../../api/analyticsApi";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
-type ConcurrentSource = "redis" | "mongo-fallback";
+type ConcurrentSource = "redis-realtime" | "redis" | "mongo-fallback";
 
 interface AnalyticsSummary {
   rangeStartUtc: string;
@@ -26,6 +26,7 @@ interface AnalyticsSummary {
   concurrentPlayers: number;
   newUsers: number;
   returningUsers: number;
+  legitActiveUsers: number;
   concurrentSource: ConcurrentSource;
 }
 
@@ -35,6 +36,7 @@ interface TrendPoint {
   dailyActiveUsers: number;
   newUsers: number;
   returningUsers: number;
+  legitActiveUsers: number;
 }
 
 const CHART_COLORS = {
@@ -156,6 +158,7 @@ function AdminAnalyticsDashboard() {
           dailyActiveUsers: Number(item.dailyActiveUsers || 0),
           newUsers: Number(item.newUsers || 0),
           returningUsers: Number(item.returningUsers || 0),
+          legitActiveUsers: Number(item.legitActiveUsers || 0),
         };
       });
 
