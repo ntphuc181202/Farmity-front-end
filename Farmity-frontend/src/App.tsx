@@ -27,6 +27,7 @@ import MaterialsAdminPage from "./pages/admin/materials/MaterialsAdminPage";
 import ResourceConfigsAdminPage from "./pages/admin/ResourceConfigsAdminPage";
 import AchievementsAdminPage from "./pages/admin/achievements/AchievementsAdminPage";
 import SkillsAdminPage from "./pages/admin/skills/SkillsAdminPage";
+import AnalyticsAdminPage from "./pages/admin/analytics/AnalyticsAdminPage";
 import MediaPage from "./pages/public/media/MediaPage";
 import MediaDetailPage from "./pages/public/media/MediaDetailPage";
 import NewsPage from "./pages/public/news/NewPage";
@@ -97,6 +98,7 @@ function App() {
           />
           <Route path="achievements" element={<AchievementsAdminPage />} />
           <Route path="skills" element={<SkillsAdminPage />} />
+          <Route path="analytics" element={<AnalyticsAdminPage />} />
         </Route>
       </Routes>
     );
