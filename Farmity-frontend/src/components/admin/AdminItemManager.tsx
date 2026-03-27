@@ -90,8 +90,12 @@ interface ItemDoc {
   viabilityDays?: number;
   crossResults?: CrossResult[];
   energyRestore?: number;
+  viableRestore?: number;
   healthRestore?: number;
   bufferDuration?: number;
+  regenBoostMultiplier?: number;
+  toolEfficiencyReductionPercent?: number;
+  effectDurationSeconds?: number;
   damage?: number;
   critChance?: number;
   weaponMaterialId?: string;
@@ -131,6 +135,13 @@ const EMPTY: ItemDoc = {
   isQuestItem: false,
   isArtifact: false,
   isRareItem: false,
+  energyRestore: 0,
+  viableRestore: 0,
+  healthRestore: 0,
+  bufferDuration: 0,
+  regenBoostMultiplier: 0,
+  toolEfficiencyReductionPercent: 0,
+  effectDurationSeconds: 0,
   npcPreferenceNames: [],
   npcPreferenceReactions: [],
 };
@@ -191,7 +202,13 @@ function buildFormData(form: ItemDoc, iconFile: File | null): FormData {
     if (form.crossResults && form.crossResults.length > 0) {
       fd.append("crossResults", JSON.stringify(form.crossResults));
     }
-  } else if (t === 4 || t === 8) {
+  } else if (t === 4) {
+    appendIfDefined(fd, "viableRestore", form.viableRestore);
+    appendIfDefined(fd, "healthRestore", form.healthRestore);
+    appendIfDefined(fd, "regenBoostMultiplier", form.regenBoostMultiplier);
+    appendIfDefined(fd, "toolEfficiencyReductionPercent", form.toolEfficiencyReductionPercent);
+    appendIfDefined(fd, "effectDurationSeconds", form.effectDurationSeconds);
+  } else if (t === 8) {
     appendIfDefined(fd, "energyRestore", form.energyRestore);
     appendIfDefined(fd, "healthRestore", form.healthRestore);
     appendIfDefined(fd, "bufferDuration", form.bufferDuration);
@@ -897,8 +914,29 @@ function TypeFields({
         </>
       )}
 
-      {/* 4 – Consumable / 8 – Cooking */}
-      {(itemType === 4 || itemType === 8) && (
+      {/* 4 – Consumable */}
+      {itemType === 4 && (
+        <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+          <Field label="Viable Restore">
+            <Input type="number" value={form.viableRestore ?? 0} onChange={(e) => setNum("viableRestore", e.target.value)} min={0} />
+          </Field>
+          <Field label="Health Restore">
+            <Input type="number" value={form.healthRestore ?? 0} onChange={(e) => setNum("healthRestore", e.target.value)} min={0} />
+          </Field>
+          <Field label="Regen Boost Multiplier">
+            <Input type="number" step="0.1" value={form.regenBoostMultiplier ?? 0} onChange={(e) => setNum("regenBoostMultiplier", e.target.value)} min={0} />
+          </Field>
+          <Field label="Tool Efficiency Reduction %">
+            <Input type="number" step="0.01" value={form.toolEfficiencyReductionPercent ?? 0} onChange={(e) => setNum("toolEfficiencyReductionPercent", e.target.value)} min={0} max={0.95} />
+          </Field>
+          <Field label="Effect Duration Seconds">
+            <Input type="number" step="0.1" value={form.effectDurationSeconds ?? 0} onChange={(e) => setNum("effectDurationSeconds", e.target.value)} min={0} />
+          </Field>
+        </div>
+      )}
+
+      {/* 8 – Cooking */}
+      {itemType === 8 && (
         <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
           <Field label="Energy Restore">
             <Input type="number" value={form.energyRestore ?? 0} onChange={(e) => setNum("energyRestore", e.target.value)} />

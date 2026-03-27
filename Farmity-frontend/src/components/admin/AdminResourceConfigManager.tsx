@@ -301,8 +301,8 @@ function AdminResourceConfigManager() {
     <div className="space-y-6">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Resource Config Catalog</h1>
-          <p className="mt-0.5 text-sm text-slate-400">{resources.length} resources total</p>
+          <h1 className="font-semibold text-white text-2xl">Resource Config Catalog</h1>
+          <p className="mt-0.5 text-slate-400 text-sm">{resources.length} resources total</p>
         </div>
         <Button onClick={openCreate}>+ New Resource</Button>
       </header>
@@ -319,25 +319,25 @@ function AdminResourceConfigManager() {
           />
         </CardHeader>
         <CardContent className="divide-y divide-slate-800">
-          {visible.length === 0 && <p className="py-8 text-sm text-slate-500 text-center">No resource configs found.</p>}
+          {visible.length === 0 && <p className="py-8 text-slate-500 text-sm text-center">No resource configs found.</p>}
           {visible.map((resource) => (
-            <div key={resource.resourceId} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-800/40 transition-colors">
+            <div key={resource.resourceId} className="flex items-center gap-4 hover:bg-slate-800/40 px-6 py-3 transition-colors">
               {resource.spriteUrl ? (
-                <img src={resource.spriteUrl} alt={resource.name} className="h-10 w-10 rounded-md bg-slate-800 object-cover shrink-0 pixel-art" />
+                <img src={resource.spriteUrl} alt={resource.name} className="bg-slate-800 rounded-md w-10 h-10 object-cover shrink-0 pixel-art" />
               ) : (
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-cyan-500/10 text-cyan-300 text-xs font-bold shrink-0">
+                <div className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-10 h-10 font-bold text-cyan-300 text-xs shrink-0">
                   RC
                 </div>
               )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-white">{resource.name}</p>
-                <p className="truncate text-xs text-slate-400">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-white truncate">{resource.name}</p>
+                <p className="text-slate-400 text-xs truncate">
                   {resource.resourceId} | Type {resource.resourceType} | Weight {resource.spawnWeight} | HP {resource.maxHp} | Drops {resource.dropTable?.length || 0}
                   {resource.requiredToolType ? ` | Tool ${resource.requiredToolType}` : ""}
                   {resource.minToolPower ? ` | Min Power ${resource.minToolPower}` : ""}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={() => openEdit(resource)}>Edit</Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(resource.resourceId)}>Delete</Button>
               </div>
@@ -347,23 +347,23 @@ function AdminResourceConfigManager() {
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex justify-center items-center gap-2">
           <Button size="sm" variant="outline" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>Prev</Button>
-          <span className="text-sm text-slate-400">{currentPage} / {totalPages}</span>
+          <span className="text-slate-400 text-sm">{currentPage} / {totalPages}</span>
           <Button size="sm" variant="outline" disabled={currentPage >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
         </div>
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto">
-          <Card className="my-8 w-full max-w-3xl border border-slate-800 bg-slate-950 flex flex-col">
-            <CardHeader className="shrink-0 border-b border-slate-800">
+        <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
+          <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
+            <CardHeader className="border-slate-800 border-b shrink-0">
               <CardTitle>{editingResourceId ? `Edit - ${editingResourceId}` : "Create New Resource Config"}</CardTitle>
             </CardHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label>Resource ID *</Label>
                     <Input
@@ -383,7 +383,7 @@ function AdminResourceConfigManager() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div className="gap-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
                   <div className="space-y-1">
                     <Label>Max HP *</Label>
                     <Input
@@ -398,7 +398,7 @@ function AdminResourceConfigManager() {
                     <select
                       value={form.resourceType}
                       onChange={(e) => set("resourceType", normalizeResourceType(e.target.value))}
-                      className="border-input bg-background px-3 py-2 border rounded-md w-full h-10 text-sm"
+                      className="bg-background px-3 py-2 border border-input rounded-md w-full h-10 text-sm"
                     >
                       {RESOURCE_TYPES.map((type) => (
                         <option key={type} value={type}>
@@ -439,26 +439,26 @@ function AdminResourceConfigManager() {
 
                 <div className="space-y-1">
                   <Label>{editingResourceId ? "Sprite (optional, replaces current)" : "Sprite (optional)"}</Label>
-                  <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-slate-700 bg-slate-900 transition hover:border-slate-500">
-                    <span className="text-sm text-slate-400">
+                  <label className="flex justify-center items-center bg-slate-900 border-2 border-slate-700 hover:border-slate-500 border-dashed rounded-lg w-full h-20 transition cursor-pointer">
+                    <span className="text-slate-400 text-sm">
                       {spriteFile ? spriteFile.name : "Click to select PNG sprite"}
                     </span>
                     <input type="file" accept="image/png,image/*" onChange={handleSpritePick} className="hidden" />
                   </label>
                   {spritePreview && (
-                    <img src={spritePreview} alt="sprite preview" className="mt-2 h-16 rounded-md bg-slate-800 object-cover pixel-art" />
+                    <img src={spritePreview} alt="sprite preview" className="bg-slate-800 mt-2 rounded-md h-16 object-cover pixel-art" />
                   )}
                 </div>
 
-                <section className="space-y-3 border-t border-slate-800 pt-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-cyan-400">Drop Table</h3>
+                <section className="space-y-3 pt-2 border-slate-800 border-t">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-cyan-400 text-sm uppercase tracking-wider">Drop Table</h3>
                     <Button type="button" size="sm" variant="outline" onClick={addDrop}>+ Add Row</Button>
                   </div>
 
                   {form.dropTable.map((drop, idx) => (
-                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end rounded-lg bg-slate-900/50 p-3">
-                      <div className="sm:col-span-5 space-y-1">
+                    <div key={idx} className="items-end gap-2 grid grid-cols-1 sm:grid-cols-12 bg-slate-900/50 p-3 rounded-lg">
+                      <div className="space-y-1 sm:col-span-5">
                         <Label>Item ID *</Label>
                         <Input
                           value={drop.itemId}
@@ -466,7 +466,7 @@ function AdminResourceConfigManager() {
                           placeholder="e.g. wood"
                         />
                       </div>
-                      <div className="sm:col-span-2 space-y-1">
+                      <div className="space-y-1 sm:col-span-2">
                         <Label>Min</Label>
                         <Input
                           type="number"
@@ -475,7 +475,7 @@ function AdminResourceConfigManager() {
                           onChange={(e) => updateDrop(idx, { minAmount: Number(e.target.value) || 1 })}
                         />
                       </div>
-                      <div className="sm:col-span-2 space-y-1">
+                      <div className="space-y-1 sm:col-span-2">
                         <Label>Max</Label>
                         <Input
                           type="number"
@@ -484,7 +484,7 @@ function AdminResourceConfigManager() {
                           onChange={(e) => updateDrop(idx, { maxAmount: Number(e.target.value) || 1 })}
                         />
                       </div>
-                      <div className="sm:col-span-2 space-y-1">
+                      <div className="space-y-1 sm:col-span-2">
                         <Label>Chance</Label>
                         <Input
                           type="number"
@@ -497,7 +497,7 @@ function AdminResourceConfigManager() {
                       </div>
                       <div className="sm:col-span-1">
                         {form.dropTable.length > 1 && (
-                          <Button type="button" variant="destructive" size="icon" className="h-9 w-9" onClick={() => removeDrop(idx)}>
+                          <Button type="button" variant="destructive" size="icon" className="w-9 h-9" onClick={() => removeDrop(idx)}>
                             x
                           </Button>
                         )}
@@ -508,7 +508,7 @@ function AdminResourceConfigManager() {
               </form>
             </div>
 
-            <div className="shrink-0 border-t border-slate-800 p-4 flex justify-end gap-2">
+            <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? "Saving..." : editingResourceId ? "Save Changes" : "Create Resource"}

@@ -136,7 +136,7 @@ function App() {
             </NavLink>
             {/* <a
               href="#"
-              className="px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-white/90 hover:text-white"
+              className="px-3 py-2 font-bold text-white/90 hover:text-white text-xs sm:text-sm uppercase tracking-wide"
             >
               Wiki
             </a> */}
