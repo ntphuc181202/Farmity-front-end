@@ -10,7 +10,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 /* ───────── constants ───────── */
 
 const RECIPE_TYPE_LABELS: Record<number, string> = {
-  0: "Default",
+  0: "Crafting",
+  1: "Cooking",
+};
+
+const RECIPE_LEVEL_LABELS: Record<number, string> = {
+  0: "Basic",
+  1: "Copper",
+  2: "Iron",
+  3: "Gold",
 };
 
 const CATEGORY_LABELS: Record<number, string> = {
@@ -20,6 +28,18 @@ const CATEGORY_LABELS: Record<number, string> = {
   3: "Materials",
   4: "Furniture",
   5: "Equipment",
+};
+
+// Cooking (1): General, Food, Materials
+// Crafting (0): General, Tool, Furniture, Equipment
+const CATEGORIES_BY_TYPE: Record<number, number[]> = {
+  0: [0, 1, 3, 4, 5],
+  1: [0, 2, 3],
+};
+
+const getCategoriesForType = (recipeType: number | "all") => {
+  if (recipeType === "all") return Object.keys(CATEGORY_LABELS).map(Number);
+  return CATEGORIES_BY_TYPE[recipeType] ?? Object.keys(CATEGORY_LABELS).map(Number);
 };
 
 /* ───────── types ───────── */
@@ -35,6 +55,7 @@ interface RecipeDoc {
   recipeName: string;
   description: string;
   recipeType: number;
+  recipeLevel: number;
   category: number;
   resultItemId: string;
   resultQuantity: number;
@@ -54,6 +75,7 @@ const EMPTY: RecipeDoc = {
   recipeName: "",
   description: "",
   recipeType: 0,
+  recipeLevel: 0,
   category: 0,
   resultItemId: "",
   resultQuantity: 1,
@@ -176,6 +198,8 @@ function AdminRecipeManager() {
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [recipeTypeFilter, setRecipeTypeFilter] = useState("all");
+  const [recipeLevelFilter, setRecipeLevelFilter] = useState("all");
   const [unlockedFilter, setUnlockedFilter] = useState("all");
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -295,6 +319,7 @@ function AdminRecipeManager() {
         recipeName: form.recipeName.trim(),
         description: form.description.trim(),
         recipeType: Number(form.recipeType),
+        recipeLevel: Number(form.recipeLevel),
         category: Number(form.category),
         resultItemId: form.resultItemId.trim(),
         resultQuantity: Number(form.resultQuantity),
@@ -358,10 +383,12 @@ function AdminRecipeManager() {
       r.recipeName.toLowerCase().includes(t) ||
       (r.description || "").toLowerCase().includes(t);
     const matchCategory = categoryFilter === "all" || String(r.category) === categoryFilter;
+    const matchType = recipeTypeFilter === "all" || String(r.recipeType) === recipeTypeFilter;
+    const matchLevel = recipeLevelFilter === "all" || String(r.recipeLevel) === recipeLevelFilter;
     const matchUnlocked =
       unlockedFilter === "all" ||
       (unlockedFilter === "yes" ? r.isUnlockedByDefault : !r.isUnlockedByDefault);
-    return matchText && matchCategory && matchUnlocked;
+    return matchText && matchCategory && matchType && matchLevel && matchUnlocked;
   });
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -392,12 +419,32 @@ function AdminRecipeManager() {
               className="flex-1 min-w-[180px]"
             />
             <select
+              value={recipeTypeFilter}
+              onChange={(e) => { setRecipeTypeFilter(e.target.value); setCategoryFilter("all"); setPage(1); }}
+              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
+            >
+              <option value="all">All Types</option>
+              {Object.entries(RECIPE_TYPE_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <select
               value={categoryFilter}
               onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
               className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
             >
               <option value="all">All Categories</option>
-              {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
+              {getCategoriesForType(recipeTypeFilter === "all" ? "all" : Number(recipeTypeFilter)).map((k) => (
+                <option key={k} value={k}>{CATEGORY_LABELS[k]}</option>
+              ))}
+            </select>
+            <select
+              value={recipeLevelFilter}
+              onChange={(e) => { setRecipeLevelFilter(e.target.value); setPage(1); }}
+              className="bg-slate-900 px-3 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 h-9 text-slate-50 text-sm"
+            >
+              <option value="all">All Levels</option>
+              {Object.entries(RECIPE_LEVEL_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
             </select>
@@ -431,7 +478,7 @@ function AdminRecipeManager() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-white truncate">{recipe.recipeName}</p>
                   <p className="text-slate-400 text-xs truncate">
-                    {recipe.recipeID} · {CATEGORY_LABELS[recipe.category] ?? "General"} · {recipe.ingredients?.length ?? 0} ingredients → {resultItem?.itemName || recipe.resultItemId} ×{recipe.resultQuantity}
+                    {recipe.recipeID} · {RECIPE_TYPE_LABELS[recipe.recipeType] ?? "Crafting"} · {RECIPE_LEVEL_LABELS[recipe.recipeLevel] ?? "Basic"} · {CATEGORY_LABELS[recipe.category] ?? "General"} · {recipe.ingredients?.length ?? 0} ingredients → {resultItem?.itemName || recipe.resultItemId} ×{recipe.resultQuantity}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -490,10 +537,29 @@ function AdminRecipeManager() {
                     <Field label="Recipe Type">
                       <select
                         value={form.recipeType}
-                        onChange={(e) => set("recipeType", Number(e.target.value))}
+                        onChange={(e) => {
+                          const newType = Number(e.target.value);
+                          const validCats = getCategoriesForType(newType);
+                          setForm((prev) => ({
+                            ...prev,
+                            recipeType: newType,
+                            category: validCats.includes(prev.category) ? prev.category : validCats[0],
+                          }));
+                        }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {Object.entries(RECIPE_TYPE_LABELS).map(([k, v]) => (
+                          <option key={k} value={k}>{v} ({k})</option>
+                        ))}
+                      </select>
+                    </Field>
+                    <Field label="Recipe Level">
+                      <select
+                        value={form.recipeLevel}
+                        onChange={(e) => set("recipeLevel", Number(e.target.value))}
+                        className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
+                      >
+                        {Object.entries(RECIPE_LEVEL_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>{v} ({k})</option>
                         ))}
                       </select>
@@ -504,8 +570,8 @@ function AdminRecipeManager() {
                         onChange={(e) => set("category", Number(e.target.value))}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
-                        {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-                          <option key={k} value={k}>{v} ({k})</option>
+                        {getCategoriesForType(form.recipeType).map((k) => (
+                          <option key={k} value={k}>{CATEGORY_LABELS[k]} ({k})</option>
                         ))}
                       </select>
                     </Field>
