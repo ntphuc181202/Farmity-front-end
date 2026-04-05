@@ -25,6 +25,9 @@ interface CombatSkillDoc {
   projectileSpeed?: number;
   projectileRange?: number;
   projectileKnockback?: number;
+  aoeCastRange?: number;
+  aoeRadius?: number;
+  aoeVfxDuration?: number;
   skillVisualConfigId?: string;
   slashVfxDuration?: number;
   slashVfxSpawnOffset?: number;
@@ -79,6 +82,9 @@ const EMPTY_SKILL: CombatSkillDoc = {
   projectileSpeed: 0,
   projectileRange: 0,
   projectileKnockback: 0,
+  aoeCastRange: 0,
+  aoeRadius: 0,
+  aoeVfxDuration: 0,
   skillVisualConfigId: "",
   slashVfxDuration: 0,
   slashVfxSpawnOffset: 0,
@@ -242,6 +248,9 @@ function AdminCombatSkillManager() {
       buffValue: (form.category || "None") === "Buff" ? Number(form.buffValue ?? 0) : 0,
       buffDuration: (form.category || "None") === "Buff" ? Number(form.buffDuration ?? 0) : 0,
       buffTickInterval: (form.category || "None") === "Buff" ? Number(form.buffTickInterval ?? 0) : 0,
+      aoeCastRange: (form.category || "None") === "AoE" ? Number(form.aoeCastRange ?? 0) : 0,
+      aoeRadius: (form.category || "None") === "AoE" ? Number(form.aoeRadius ?? 0) : 0,
+      aoeVfxDuration: (form.category || "None") === "AoE" ? Number(form.aoeVfxDuration ?? 0) : 0,
       requiredWeaponType: (form.ownership || "PlayerSkill") === "PlayerSkill" ? 0 : form.requiredWeaponType,
     };
 
@@ -317,6 +326,7 @@ function AdminCombatSkillManager() {
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const showProjectile = form.category === "Projectile";
+  const showAoE = form.category === "AoE";
   const showSlash = form.category === "Slash";
   const showBuff = form.category === "Buff";
 
@@ -491,6 +501,11 @@ function AdminCombatSkillManager() {
                             set("buffDuration", 0);
                             set("buffTickInterval", 0);
                           }
+                          if (nextCategory !== "AoE") {
+                            set("aoeCastRange", 0);
+                            set("aoeRadius", 0);
+                            set("aoeVfxDuration", 0);
+                          }
                         }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
@@ -600,6 +615,23 @@ function AdminCombatSkillManager() {
                       </Field>
                       <Field label="Buff Tick Interval (s)">
                         <Input type="number" min={0} value={form.buffTickInterval ?? 0} onChange={(e) => setNum("buffTickInterval", e.target.value)} step="0.01" />
+                      </Field>
+                    </div>
+                  </section>
+                )}
+
+                {showAoE && (
+                  <section className="space-y-3 pt-2 border-slate-800 border-t">
+                    <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">AoE Fields</h3>
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
+                      <Field label="AoE Cast Range">
+                        <Input type="number" min={0} value={form.aoeCastRange ?? 0} onChange={(e) => setNum("aoeCastRange", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="AoE Radius">
+                        <Input type="number" min={0} value={form.aoeRadius ?? 0} onChange={(e) => setNum("aoeRadius", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="AoE VFX Duration (s)">
+                        <Input type="number" min={0} value={form.aoeVfxDuration ?? 0} onChange={(e) => setNum("aoeVfxDuration", e.target.value)} step="0.01" />
                       </Field>
                     </div>
                   </section>
