@@ -13,6 +13,7 @@ interface CombatSkillDoc {
   skillDescription?: string;
   ownership?: string;
   category?: string;
+  unlockLevel?: number;
   requiredWeaponType?: number | "";
   cooldown?: number;
   diceTier?: string;
@@ -60,6 +61,7 @@ const EMPTY_SKILL: CombatSkillDoc = {
   skillDescription: "",
   ownership: "PlayerSkill",
   category: "None",
+  unlockLevel: 1,
   requiredWeaponType: "",
   cooldown: 0,
   diceTier: "D6",
@@ -212,11 +214,11 @@ function AdminCombatSkillManager() {
       return;
     }
 
-    if (!editingSkillId && !(form.skillVisualConfigId || "").trim()) {
+    if (form.unlockLevel !== undefined && form.unlockLevel !== null && Number(form.unlockLevel) < 1) {
       Swal.fire({
         icon: "warning",
-        title: "Skill Visual Config is required for new combat skills",
-        text: "Create/select a combat catalog entry with type skill_vfx.",
+        title: "Unlock Level must be at least 1",
+        text: "Skills become visible from unlockLevel >= 1.",
         background: "#020617",
         color: "#e5e7eb",
       });
@@ -370,7 +372,7 @@ function AdminCombatSkillManager() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-white truncate">{skill.skillName}</p>
                 <p className="text-slate-400 text-xs truncate">
-                  {skill.skillId} · {skill.ownership || "-"} · {skill.category || "-"}
+                  {skill.skillId} · {skill.ownership || "-"} · {skill.category || "-"} · unlock L{Number(skill.unlockLevel ?? 1)}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -476,6 +478,9 @@ function AdminCombatSkillManager() {
                     </Field>
                     <Field label="Cooldown (s)">
                       <Input type="number" value={form.cooldown ?? 0} onChange={(e) => setNum("cooldown", e.target.value)} min={0} step="0.01" />
+                    </Field>
+                    <Field label="Unlock Level">
+                      <Input type="number" value={form.unlockLevel ?? 1} onChange={(e) => setNum("unlockLevel", e.target.value)} min={1} step="1" />
                     </Field>
                     <Field label="Dice Tier">
                       <select
