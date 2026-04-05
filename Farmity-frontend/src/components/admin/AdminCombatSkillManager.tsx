@@ -13,6 +13,10 @@ interface CombatSkillDoc {
   skillDescription?: string;
   ownership?: string;
   category?: string;
+  buffSubCategory?: string;
+  buffValue?: number;
+  buffDuration?: number;
+  buffTickInterval?: number;
   unlockLevel?: number;
   requiredWeaponType?: number | "";
   cooldown?: number;
@@ -39,12 +43,14 @@ interface CombatCatalogDoc {
 interface CatalogEnums {
   ownership: string[];
   category: string[];
+  buffSubCategory: string[];
   diceTier: string[];
 }
 
 const FALLBACK_ENUMS: CatalogEnums = {
   ownership: ["PlayerSkill", "WeaponSkill"],
   category: ["None", "Projectile", "Slash", "AoE", "Buff", "Summon"],
+  buffSubCategory: ["None", "InstantHeal", "HealOverTime", "StaminaRegen", "MoveSpeedPercent"],
   diceTier: ["D6", "D8", "D10", "D12", "D20"],
 };
 
@@ -61,6 +67,10 @@ const EMPTY_SKILL: CombatSkillDoc = {
   skillDescription: "",
   ownership: "PlayerSkill",
   category: "None",
+  buffSubCategory: "None",
+  buffValue: 0,
+  buffDuration: 0,
+  buffTickInterval: 0,
   unlockLevel: 1,
   requiredWeaponType: "",
   cooldown: 0,
@@ -142,6 +152,7 @@ function AdminCombatSkillManager() {
         setCatalogEnums({
           ownership: nextEnums.ownership || FALLBACK_ENUMS.ownership,
           category: nextEnums.category || FALLBACK_ENUMS.category,
+          buffSubCategory: nextEnums.buffSubCategory || FALLBACK_ENUMS.buffSubCategory,
           diceTier: nextEnums.diceTier || FALLBACK_ENUMS.diceTier,
         });
       }
@@ -227,6 +238,10 @@ function AdminCombatSkillManager() {
 
     const normalizedForm: CombatSkillDoc = {
       ...form,
+      buffSubCategory: (form.category || "None") === "Buff" ? form.buffSubCategory || "None" : "None",
+      buffValue: (form.category || "None") === "Buff" ? Number(form.buffValue ?? 0) : 0,
+      buffDuration: (form.category || "None") === "Buff" ? Number(form.buffDuration ?? 0) : 0,
+      buffTickInterval: (form.category || "None") === "Buff" ? Number(form.buffTickInterval ?? 0) : 0,
       requiredWeaponType: (form.ownership || "PlayerSkill") === "PlayerSkill" ? 0 : form.requiredWeaponType,
     };
 
@@ -303,6 +318,7 @@ function AdminCombatSkillManager() {
 
   const showProjectile = form.category === "Projectile";
   const showSlash = form.category === "Slash";
+  const showBuff = form.category === "Buff";
 
   return (
     <div className="space-y-6">
@@ -466,7 +482,16 @@ function AdminCombatSkillManager() {
                     <Field label="Category">
                       <select
                         value={form.category || "None"}
-                        onChange={(e) => set("category", e.target.value)}
+                        onChange={(e) => {
+                          const nextCategory = e.target.value;
+                          set("category", nextCategory);
+                          if (nextCategory !== "Buff") {
+                            set("buffSubCategory", "None");
+                            set("buffValue", 0);
+                            set("buffDuration", 0);
+                            set("buffTickInterval", 0);
+                          }
+                        }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {catalogEnums.category.map((c) => (
@@ -545,6 +570,36 @@ function AdminCombatSkillManager() {
                       </Field>
                       <Field label="Projectile Knockback">
                         <Input type="number" value={form.projectileKnockback ?? 0} onChange={(e) => setNum("projectileKnockback", e.target.value)} step="0.01" />
+                      </Field>
+                    </div>
+                  </section>
+                )}
+
+                {showBuff && (
+                  <section className="space-y-3 pt-2 border-slate-800 border-t">
+                    <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">Buff Fields</h3>
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+                      <Field label="Buff Sub Category">
+                        <select
+                          value={form.buffSubCategory || "None"}
+                          onChange={(e) => set("buffSubCategory", e.target.value)}
+                          className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
+                        >
+                          {catalogEnums.buffSubCategory.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Buff Value">
+                        <Input type="number" value={form.buffValue ?? 0} onChange={(e) => setNum("buffValue", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="Buff Duration (s)">
+                        <Input type="number" min={0} value={form.buffDuration ?? 0} onChange={(e) => setNum("buffDuration", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="Buff Tick Interval (s)">
+                        <Input type="number" min={0} value={form.buffTickInterval ?? 0} onChange={(e) => setNum("buffTickInterval", e.target.value)} step="0.01" />
                       </Field>
                     </div>
                   </section>
