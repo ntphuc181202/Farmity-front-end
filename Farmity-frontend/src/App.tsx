@@ -91,6 +91,7 @@ function App() {
           <Route path="plants" element={<PlantsAdminPage />} />
           <Route path="main-menu" element={<MainMenuConfigPage />} />
           <Route path="skin-configs" element={<SkinConfigPage />} />
+          <Route path="skill-config" element={<CombatConfigPage />} />
           <Route path="combat-configs" element={<CombatConfigPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
           <Route
