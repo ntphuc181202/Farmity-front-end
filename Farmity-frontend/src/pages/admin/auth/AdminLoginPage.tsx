@@ -8,7 +8,8 @@ import { Card, CardContent } from "../../../components/ui/card";
 import Swal from "sweetalert2";
 
 function AdminLoginPage() {
-  const CONFLICT_MESSAGE = "This account is already logged in on another device.";
+  const CONFLICT_MESSAGE =
+    "This account is already logged in on another device.";
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -37,9 +38,11 @@ function AdminLoginPage() {
         userId?: string;
         username?: string;
         access_token?: string;
+        isStaff?: string | string[];
       };
 
       if (data?.access_token) {
+        // Lưu auth tạm thời
         localStorage.setItem(
           "auth",
           JSON.stringify({
@@ -51,19 +54,74 @@ function AdminLoginPage() {
 
         localStorage.setItem("isAdminLoggedIn", "true");
 
-        await Swal.fire({
-          toast: true,
-          icon: "success",
-          title: "Logged in successfully",
-          position: "top-end",
-          showConfirmButton: false,
-          timer: 2000,
-          timerProgressBar: true,
-          background: "#020617",
-          color: "#e5e7eb",
-        });
+        // Gọi admin-check để lấy isStaff
+        try {
+          const checkRes = await authApi.adminCheck();
+          const checkData = checkRes.data;
 
-        navigate("/admin/blog", { replace: true });
+          const rawStaff = checkData.isStaff;
+          const permissions = Array.isArray(rawStaff)
+            ? rawStaff
+            : typeof rawStaff === "string"
+              ? rawStaff.split(/[,;\s]+/)
+              : [];
+
+          const normalizedPermissions = permissions
+            .map((permission) => permission?.toString().trim().toLowerCase())
+            .filter(Boolean)
+            .map((permission) => (permission === "new" ? "news" : permission));
+
+          // Cập nhật auth với isStaff
+          localStorage.setItem(
+            "auth",
+            JSON.stringify({
+              userId: data.userId,
+              username: data.username,
+              access_token: data.access_token,
+              isStaff: normalizedPermissions,
+            }),
+          );
+
+          const redirectPath = normalizedPermissions.includes("news")
+            ? "/admin/news"
+            : normalizedPermissions.includes("blog")
+              ? "/admin/blog"
+              : normalizedPermissions.includes("media")
+                ? "/admin/media"
+                : "/admin/blog";
+
+          await Swal.fire({
+            toast: true,
+            icon: "success",
+            title: "Logged in successfully",
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: "#020617",
+            color: "#e5e7eb",
+          });
+
+          navigate(redirectPath, { replace: true });
+        } catch (checkErr) {
+          console.error("Admin check failed:", checkErr);
+          // Nếu admin-check fail, vẫn login nhưng không có isStaff
+          const redirectPath = "/admin/blog";
+
+          await Swal.fire({
+            toast: true,
+            icon: "success",
+            title: "Logged in successfully",
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: "#020617",
+            color: "#e5e7eb",
+          });
+
+          navigate(redirectPath, { replace: true });
+        }
       }
     } catch (err: any) {
       console.error("Login failed", err);

@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import authApi from "../../api/authApi";
 import { Button } from "../../components/ui/button";
+
+type AdminAuth = {
+  isStaff?: string[] | string;
+} | null;
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border-l-2 ${
@@ -13,6 +17,179 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 function AdminLayout() {
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const auth = useMemo<AdminAuth>(() => {
+    const raw = localStorage.getItem("auth");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const normalizePermission = (permission: string) => {
+    const normalized = permission?.toString().trim().toLowerCase();
+    if (normalized === "new") return "news";
+    return normalized;
+  };
+
+  const staffPermissions = useMemo(() => {
+    if (!auth?.isStaff) return [];
+    const raw = auth.isStaff;
+    const permissions = Array.isArray(raw)
+      ? raw
+      : typeof raw === "string"
+        ? raw.split(/[,;\s]+/)
+        : [];
+
+    const normalized = permissions
+      .map((permission) => normalizePermission(permission))
+      .filter(Boolean);
+
+    return normalized;
+  }, [auth]);
+
+  const isStaffUser = staffPermissions.length > 0;
+
+  const staffNavItems = [
+    {
+      to: "/admin/blog",
+      label: "Blog Management",
+      icon: "B",
+      iconClass: "bg-emerald-500/10 text-emerald-400",
+      permission: "blog",
+    },
+    {
+      to: "/admin/news",
+      label: "News Management",
+      icon: "N",
+      iconClass: "bg-emerald-500/10 text-emerald-400",
+      permission: "news",
+    },
+    {
+      to: "/admin/media",
+      label: "Media Management",
+      icon: "M",
+      iconClass: "bg-emerald-500/10 text-emerald-400",
+      permission: "media",
+    },
+  ];
+
+  const adminNavItems = [
+    {
+      to: "/admin/blog",
+      label: "Blog Management",
+      icon: "B",
+      iconClass: "bg-emerald-500/10 text-emerald-400",
+    },
+    {
+      to: "/admin/news",
+      label: "News Management",
+      icon: "N",
+      iconClass: "bg-emerald-500/10 text-emerald-400",
+    },
+    {
+      to: "/admin/media",
+      label: "Media Management",
+      icon: "M",
+      iconClass: "bg-emerald-500/10 text-emerald-400",
+    },
+    {
+      to: "/admin/items",
+      label: "Items Catalog",
+      icon: "I",
+      iconClass: "bg-amber-500/10 text-amber-400",
+    },
+    {
+      to: "/admin/recipes",
+      label: "Crafting Recipes",
+      icon: "R",
+      iconClass: "bg-violet-500/10 text-violet-400",
+    },
+    {
+      to: "/admin/quests",
+      label: "Quest Management",
+      icon: "Q",
+      iconClass: "bg-fuchsia-500/10 text-fuchsia-300",
+    },
+    {
+      to: "/admin/events",
+      label: "Event Management",
+      icon: "Ev",
+      iconClass: "bg-teal-500/10 text-teal-300",
+    },
+    {
+      to: "/admin/enemy-stats",
+      label: "Enemy Stats",
+      icon: "En",
+      iconClass: "bg-red-500/10 text-red-300",
+    },
+    {
+      to: "/admin/plants",
+      label: "Plants Catalog",
+      icon: "P",
+      iconClass: "bg-green-500/10 text-green-400",
+    },
+    {
+      to: "/admin/main-menu",
+      label: "Main Menu BG",
+      icon: "🖼",
+      iconClass: "bg-sky-500/10 text-sky-400",
+    },
+    {
+      to: "/admin/skin-configs",
+      label: "Skin Configs",
+      icon: "S",
+      iconClass: "bg-pink-500/10 text-pink-400",
+    },
+    {
+      to: "/admin/combat-configs",
+      label: "Combat Configs",
+      icon: "Cc",
+      iconClass: "bg-rose-500/10 text-rose-300",
+    },
+    {
+      to: "/admin/materials",
+      label: "Materials",
+      icon: "Mt",
+      iconClass: "bg-orange-500/10 text-orange-400",
+    },
+    {
+      to: "/admin/resource-configs",
+      label: "Resource Configs",
+      icon: "Rc",
+      iconClass: "bg-cyan-500/10 text-cyan-400",
+    },
+    {
+      to: "/admin/achievements",
+      label: "Achievements",
+      icon: "Ac",
+      iconClass: "bg-yellow-500/10 text-yellow-300",
+    },
+    {
+      to: "/admin/skills",
+      label: "Combat Skills",
+      icon: "Sk",
+      iconClass: "bg-indigo-500/10 text-indigo-300",
+    },
+    {
+      to: "/admin/analytics",
+      label: "Analytics",
+      icon: "An",
+      iconClass: "bg-cyan-500/10 text-cyan-300",
+    },
+    {
+      to: "/admin/staff",
+      label: "Staff Management",
+      icon: "St",
+      iconClass: "bg-violet-500/10 text-violet-300",
+    },
+  ];
+
+  const visibleNavItems = isStaffUser
+    ? staffNavItems.filter((item) => staffPermissions.includes(item.permission))
+    : adminNavItems;
 
   const handleLogout = async () => {
     try {
@@ -43,90 +220,24 @@ function AdminLayout() {
           <p className="px-3 pb-1 font-semibold text-slate-500 text-xs uppercase tracking-wide">
             Navigation
           </p>
-          <NavLink to="/admin/blog" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-emerald-500/10 rounded-md w-6 h-6 font-semibold text-emerald-400 text-xs">
-              B
-            </span>
-            <span>Blog Management</span>
-          </NavLink>
-          <NavLink to="/admin/news" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-emerald-500/10 rounded-md w-6 h-6 font-semibold text-emerald-400 text-xs">
-              N
-            </span>
-            <span>News Management</span>
-          </NavLink>
-          <NavLink to="/admin/media" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-emerald-500/10 rounded-md w-6 h-6 font-semibold text-emerald-400 text-xs">
-             M
-            </span>
-            <span>Media Management</span>
-          </NavLink>
-          <NavLink to="/admin/items" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-amber-500/10 rounded-md w-6 h-6 font-semibold text-amber-400 text-xs">
-              I
-            </span>
-            <span>Items Catalog</span>
-          </NavLink>
-          <NavLink to="/admin/recipes" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-violet-500/10 rounded-md w-6 h-6 font-semibold text-violet-400 text-xs">
-              R
-            </span>
-            <span>Crafting Recipes</span>
-          </NavLink>
-          <NavLink to="/admin/plants" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-green-500/10 rounded-md w-6 h-6 font-semibold text-green-400 text-xs">
-              P
-            </span>
-            <span>Plants Catalog</span>
-          </NavLink>
-          <NavLink to="/admin/main-menu" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-sky-500/10 rounded-md w-6 h-6 font-semibold text-sky-400 text-xs">
-              🖼
-            </span>
-            <span>Main Menu BG</span>
-          </NavLink>
-          <NavLink to="/admin/skin-configs" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-pink-500/10 rounded-md w-6 h-6 font-semibold text-pink-400 text-xs">
-              S
-            </span>
-            <span>Skin Configs</span>
-          </NavLink>
-          <NavLink to="/admin/combat-configs" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-rose-500/10 rounded-md w-6 h-6 font-semibold text-rose-300 text-xs">
-              Cc
-            </span>
-            <span>Combat Configs</span>
-          </NavLink>
-          <NavLink to="/admin/materials" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-orange-500/10 rounded-md w-6 h-6 font-semibold text-orange-400 text-xs">
-              Mt
-            </span>
-            <span>Materials</span>
-          </NavLink>
-          <NavLink to="/admin/resource-configs" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-6 h-6 font-semibold text-cyan-400 text-xs">
-              Rc
-            </span>
-            <span>Resource Configs</span>
-          </NavLink>
-          <NavLink to="/admin/achievements" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-yellow-500/10 rounded-md w-6 h-6 font-semibold text-yellow-300 text-xs">
-              Ac
-            </span>
-            <span>Achievements</span>
-          </NavLink>
-          <NavLink to="/admin/skills" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-indigo-500/10 rounded-md w-6 h-6 font-semibold text-indigo-300 text-xs">
-              Sk
-            </span>
-            <span>Combat Skills</span>
-          </NavLink>
-          <NavLink to="/admin/analytics" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-6 h-6 font-semibold text-cyan-300 text-xs">
-              An
-            </span>
-            <span>Analytics</span>
-          </NavLink>
+          {visibleNavItems.length > 0 ? (
+            visibleNavItems.map((item) => (
+              <NavLink key={item.to} to={item.to} className={linkClass}>
+                <span
+                  className={`inline-flex justify-center items-center rounded-md w-6 h-6 font-semibold text-xs ${
+                    item.iconClass ?? "bg-slate-800/50 text-slate-50"
+                  }`}
+                >
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </NavLink>
+            ))
+          ) : (
+            <div className="rounded-md border border-slate-800 bg-slate-950 px-3 py-4 text-sm text-slate-400">
+              No assigned modules. Contact your administrator.
+            </div>
+          )}
         </nav>
 
         <div className="px-3 py-4 border-slate-800 border-t">
@@ -202,146 +313,25 @@ function AdminLayout() {
                 <p className="px-3 pb-1 font-semibold text-slate-500 text-xs uppercase tracking-wide">
                   Navigation
                 </p>
-                <NavLink
-                  to="/admin/blog"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-emerald-500/10 rounded-md w-6 h-6 font-semibold text-emerald-400 text-xs">
-                    B
-                  </span>
-                  <span>Blog posts</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/news"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-emerald-500/10 rounded-md w-6 h-6 font-semibold text-emerald-400 text-xs">
-                    N
-                  </span>
-                  <span>News</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/media"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-emerald-500/10 rounded-md w-6 h-6 font-semibold text-emerald-400 text-xs">
-                    M
-                  </span>
-                  <span>Media</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/items"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-amber-500/10 rounded-md w-6 h-6 font-semibold text-amber-400 text-xs">
-                    I
-                  </span>
-                  <span>Items Catalog</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/recipes"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-violet-500/10 rounded-md w-6 h-6 font-semibold text-violet-400 text-xs">
-                    R
-                  </span>
-                  <span>Crafting Recipes</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/plants"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-green-500/10 rounded-md w-6 h-6 font-semibold text-green-400 text-xs">
-                    P
-                  </span>
-                  <span>Plants Catalog</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/main-menu"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-sky-500/10 rounded-md w-6 h-6 font-semibold text-sky-400 text-xs">
-                    🖼
-                  </span>
-                  <span>Main Menu BG</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/skin-configs"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-pink-500/10 rounded-md w-6 h-6 font-semibold text-pink-400 text-xs">
-                    S
-                  </span>
-                  <span>Skin Configs</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/combat-configs"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-rose-500/10 rounded-md w-6 h-6 font-semibold text-rose-300 text-xs">
-                    Cc
-                  </span>
-                  <span>Combat Configs</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/materials"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-orange-500/10 rounded-md w-6 h-6 font-semibold text-orange-400 text-xs">
-                    Mt
-                  </span>
-                  <span>Materials</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/resource-configs"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-6 h-6 font-semibold text-cyan-400 text-xs">
-                    Rc
-                  </span>
-                  <span>Resource Configs</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/achievements"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-yellow-500/10 rounded-md w-6 h-6 font-semibold text-yellow-300 text-xs">
-                    Ac
-                  </span>
-                  <span>Achievements</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/skills"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-indigo-500/10 rounded-md w-6 h-6 font-semibold text-indigo-300 text-xs">
-                    Sk
-                  </span>
-                  <span>Combat Skills</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/analytics"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-cyan-500/10 rounded-md w-6 h-6 font-semibold text-cyan-300 text-xs">
-                    An
-                  </span>
-                  <span>Analytics</span>
-                </NavLink>
+                {visibleNavItems.length > 0 ? (
+                  visibleNavItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setMobileNavOpen(false)}
+                      className={linkClass}
+                    >
+                      <span className="inline-flex justify-center items-center rounded-md w-6 h-6 font-semibold text-slate-50 text-xs bg-slate-800/50">
+                        {item.icon}
+                      </span>
+                      <span>{item.label}</span>
+                    </NavLink>
+                  ))
+                ) : (
+                  <div className="rounded-md border border-slate-800 bg-slate-950 px-3 py-4 text-sm text-slate-400">
+                    No assigned modules. Contact your administrator.
+                  </div>
+                )}
               </nav>
               <div className="px-3 py-4 border-slate-800 border-t">
                 <Button

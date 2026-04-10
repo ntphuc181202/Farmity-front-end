@@ -28,6 +28,10 @@ import ResourceConfigsAdminPage from "./pages/admin/ResourceConfigsAdminPage";
 import AchievementsAdminPage from "./pages/admin/achievements/AchievementsAdminPage";
 import SkillsAdminPage from "./pages/admin/skills/SkillsAdminPage";
 import AnalyticsAdminPage from "./pages/admin/analytics/AnalyticsAdminPage";
+import StaffAdminPage from "./pages/admin/staff/StaffAdminPage";
+import QuestsAdminPage from "./pages/admin/quests/QuestsAdminPage";
+import EventsAdminPage from "./pages/admin/events/EventsAdminPage";
+import EnemyStatsAdminPage from "./pages/admin/enemy-stats/EnemyStatsAdminPage";
 import MediaPage from "./pages/public/media/MediaPage";
 import MediaDetailPage from "./pages/public/media/MediaDetailPage";
 import NewsPage from "./pages/public/news/NewPage";
@@ -87,6 +91,9 @@ function App() {
           <Route path="media" element={<MediaAdminPage />} />
           <Route path="items" element={<ItemsAdminPage />} />
           <Route path="recipes" element={<RecipesAdminPage />} />
+          <Route path="quests" element={<QuestsAdminPage />} />
+          <Route path="events" element={<EventsAdminPage />} />
+          <Route path="enemy-stats" element={<EnemyStatsAdminPage />} />
           <Route path="plants" element={<PlantsAdminPage />} />
           <Route path="main-menu" element={<MainMenuConfigPage />} />
           <Route path="skin-configs" element={<SkinConfigPage />} />
@@ -99,6 +106,7 @@ function App() {
           <Route path="achievements" element={<AchievementsAdminPage />} />
           <Route path="skills" element={<SkillsAdminPage />} />
           <Route path="analytics" element={<AnalyticsAdminPage />} />
+          <Route path="staff" element={<StaffAdminPage />} />
         </Route>
       </Routes>
     );
