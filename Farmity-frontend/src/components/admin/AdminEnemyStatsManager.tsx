@@ -298,7 +298,7 @@ function AdminEnemyStatsManager() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-md"
+            className="w-full"
           />
         </CardHeader>
         <CardContent className="divide-y divide-slate-800">
