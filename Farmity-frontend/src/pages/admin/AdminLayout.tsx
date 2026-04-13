@@ -178,11 +178,11 @@ function AdminLayout() {
             </span>
             <span>Skin Configs</span>
           </NavLink>
-          <NavLink to="/admin/skill-config" className={linkClass}>
+          <NavLink to="/admin/skill-visual" className={linkClass}>
             <span className="inline-flex justify-center items-center bg-rose-500/10 rounded-md w-6 h-6 font-semibold text-rose-300 text-xs">
               Cc
             </span>
-            <span>Skill Config</span>
+            <span>Skill Visual</span>
           </NavLink>
           <NavLink to="/admin/materials" className={linkClass}>
             <span className="inline-flex justify-center items-center bg-orange-500/10 rounded-md w-6 h-6 font-semibold text-orange-400 text-xs">
@@ -376,14 +376,14 @@ function AdminLayout() {
                   <span>Skin Configs</span>
                 </NavLink>
                 <NavLink
-                  to="/admin/skill-config"
+                  to="/admin/skill-visual"
                   onClick={() => setMobileNavOpen(false)}
                   className={linkClass}
                 >
                   <span className="inline-flex justify-center items-center bg-rose-500/10 rounded-md w-6 h-6 font-semibold text-rose-300 text-xs">
                     Cc
                   </span>
-                  <span>Skill Config</span>
+                  <span>Skill Visual</span>
                 </NavLink>
                 <NavLink
                   to="/admin/materials"
