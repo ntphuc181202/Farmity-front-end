@@ -77,30 +77,44 @@ function HomePage() {
           }}
         >
           <img
-            src={`${base}img/stardewbackground.png`}
+            src={`${base}img/background.png`}
             alt=""
             aria-hidden
-            className="w-full h-[100%] object-cover object-bottom"
+            className="w-full h-[120%] object-cover object-bottom"
             style={{
               transform: "translateY(-22%)",
             }}
           />
         </div>
 
-        {/* Cloud */}
+        {/* Cloud layers */}
         <img
           src={`${base}img/cloud.png`}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute top-20 left-[-300px] w-[900px] opacity-25 z-[1] animate-cloud"
+          className="pointer-events-none absolute top-12 left-[-420px] w-[1200px] opacity-30 z-[1] animate-cloud"
+        />
+        <img
+          src={`${base}img/cloud.png`}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute top-28 left-[-520px] w-[1100px] opacity-20 z-[1] animate-cloud"
+          style={{ animationDelay: "-18s", animationDuration: "95s" }}
+        />
+        <img
+          src={`${base}img/cloud.png`}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute top-44 left-[-460px] w-[980px] opacity-25 z-[1] animate-cloud"
+          style={{ animationDelay: "-35s", animationDuration: "105s" }}
         />
 
         {/* Bird */}
         <img
-          src={`${base}img/stardew_bird.gif`}
+          src={`${base}img/bird.gif`}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute top-[55%] left-1/2 w-[100px] -translate-y-1/2 z-[2] animate-bird"
+          className="pointer-events-none absolute top-[50%] left-[110%] w-[100px] -translate-y-1/2 z-[2] animate-bird"
         />
 
         {/* Overlay Content */}

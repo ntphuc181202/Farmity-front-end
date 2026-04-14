@@ -119,6 +119,7 @@ function AdminEnemyStatsManager() {
   const [original, setOriginal] = useState<EnemyStatsDoc | null>(null);
   const [form, setForm] = useState<EnemyStatsDoc | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const pageSize = 10;
@@ -210,10 +211,12 @@ function AdminEnemyStatsManager() {
   const openEdit = (enemy: EnemyStatsDoc) => {
     setOriginal(enemy);
     setForm({ ...enemy });
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
+    setIsDetailMode(false);
     setIsModalOpen(false);
   };
 
@@ -330,7 +333,7 @@ function AdminEnemyStatsManager() {
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button size="sm" onClick={() => openEdit(enemy)}>
-                    Edit
+                    Detail
                   </Button>
                 </div>
               </div>
@@ -366,14 +369,14 @@ function AdminEnemyStatsManager() {
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4">
           <Card className="my-8 flex w-full max-w-5xl flex-col border border-slate-800 bg-slate-950">
             <CardHeader className="shrink-0 border-b border-slate-800">
-              <CardTitle>{form?.enemyId ? `Edit Enemy Stats - ${form.enemyId}` : "Edit Enemy Stats"}</CardTitle>
+              <CardTitle>{form?.enemyId ? `${isDetailMode ? "Detail" : "Edit"} Enemy Stats - ${form.enemyId}` : "Enemy Stats"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 overflow-y-auto p-6">
               {!form ? (
                 <p className="py-8 text-center text-sm text-slate-500">Select an enemy to edit.</p>
               ) : (
-                <div className="space-y-5">
+                <fieldset disabled={isDetailMode} className="space-y-5">
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Enemy ID (immutable)">
                       <Input value={form.enemyId} disabled />
@@ -464,7 +467,7 @@ function AdminEnemyStatsManager() {
                       <Field label="Flash Count"><Input type="number" min={0} value={form.flashCount ?? 0} onChange={(e) => setNum("flashCount", e.target.value)} /></Field>
                     </Grid4>
                   </Section>
-                </div>
+                </fieldset>
               )}
             </div>
 
@@ -472,7 +475,12 @@ function AdminEnemyStatsManager() {
               <Button type="button" variant="outline" onClick={closeModal}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={saving || !form}>
+              {form?.enemyId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSave} disabled={saving || !form || isDetailMode}>
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
             </div>

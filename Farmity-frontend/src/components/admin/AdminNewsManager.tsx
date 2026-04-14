@@ -22,6 +22,7 @@ function AdminNewsManager() {
   const [loading, setLoading] = useState(false);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -42,6 +43,7 @@ function AdminNewsManager() {
     setThumbnailPreview("");
     setPublishDate("");
     setEditingId(null);
+    setIsDetailMode(false);
     setMessage("");
   };
 
@@ -127,12 +129,14 @@ function AdminNewsManager() {
     setPublishDate(item.publishDate ? item.publishDate.slice(0, 10) : "");
 
     setEditingId(item._id || item.id || null);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
   const handleThumbnailUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    if (editingId && isDetailMode) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -260,7 +264,7 @@ function AdminNewsManager() {
 
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => handleEdit(item)}>
-                    Edit
+                    Detail
                   </Button>
 
                   <Button
@@ -281,12 +285,13 @@ function AdminNewsManager() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
           <Card className="w-full max-w-4xl bg-slate-950 border border-slate-800 flex flex-col max-h-[90vh]">
             <CardHeader className="border-b border-slate-800">
-              <CardTitle>{editingId ? "Edit news" : "Create news"}</CardTitle>
+              <CardTitle>{editingId ? (isDetailMode ? "News detail" : "Edit news") : "Create news"}</CardTitle>
             </CardHeader>
 
             {/* BODY SCROLL */}
             <div className="flex-1 overflow-y-auto p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
+                <fieldset disabled={!!editingId && isDetailMode} className="space-y-4">
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -333,7 +338,12 @@ function AdminNewsManager() {
                   <Editor
                     tinymceScriptSrc="/tinymce/js/tinymce/tinymce.min.js"
                     value={content}
-                    onEditorChange={(v) => setContent(v)}
+                    onEditorChange={(v) => {
+                      if (!editingId || !isDetailMode) {
+                        setContent(v);
+                      }
+                    }}
+                    disabled={!!editingId && isDetailMode}
                     init={{
                       license_key: "gpl",
                       height: 400,
@@ -369,6 +379,7 @@ function AdminNewsManager() {
                         "bullist numlist | link image media table | code preview fullscreen",
 
                       file_picker_types: "image",
+                      readonly: !!editingId && isDetailMode,
 
                       images_upload_handler: async (blobInfo) => {
                         const signRes = await newsApi.uploadSignature({
@@ -405,6 +416,7 @@ function AdminNewsManager() {
                     }}
                   />
                 </div>
+                </fieldset>
                 {/* STICKY FOOTER */}
                 <div className="border-t border-slate-800 p-4 flex justify-end gap-2">
                   <Button
@@ -415,7 +427,13 @@ function AdminNewsManager() {
                     Cancel
                   </Button>
 
-                  <Button type="submit" disabled={loading || uploading}>
+                  {editingId && isDetailMode && (
+                    <Button type="button" onClick={() => setIsDetailMode(false)}>
+                      Edit
+                    </Button>
+                  )}
+
+                  <Button type="submit" disabled={loading || uploading || (!!editingId && isDetailMode)}>
                     {uploading
                       ? "Uploading..."
                       : editingId

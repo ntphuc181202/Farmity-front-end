@@ -38,6 +38,7 @@ function AdminMaterialManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMaterialId, setEditingMaterialId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<MaterialDoc>({ ...EMPTY });
   const [spritesheetFile, setSpritesheetFile] = useState<File | null>(null);
   const [spritesheetPreview, setSpritesheetPreview] = useState("");
@@ -63,10 +64,12 @@ function AdminMaterialManager() {
     setSpritesheetFile(null);
     setSpritesheetPreview("");
     setEditingMaterialId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -74,6 +77,7 @@ function AdminMaterialManager() {
     setForm({ ...mat });
     setSpritesheetPreview(mat.spritesheetUrl || "");
     setEditingMaterialId(mat.materialId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -209,7 +213,7 @@ function AdminMaterialManager() {
                 <p className="text-slate-400 text-xs truncate">{mat.materialId} · Tier {mat.materialTier} · Cell {mat.cellSize}px</p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button size="sm" onClick={() => openEdit(mat)}>Edit</Button>
+                <Button size="sm" onClick={() => openEdit(mat)}>Detail</Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(mat.materialId)}>Delete</Button>
               </div>
             </div>
@@ -231,11 +235,12 @@ function AdminMaterialManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingMaterialId ? `Edit — ${editingMaterialId}` : "Create New Material"}</CardTitle>
+              <CardTitle>{editingMaterialId ? `${isDetailMode ? "Detail" : "Edit"} — ${editingMaterialId}` : "Create New Material"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4">
+                <fieldset disabled={!!editingMaterialId && isDetailMode} className="space-y-4">
 
                 {/* Material ID */}
                 <div className="space-y-1">
@@ -303,6 +308,7 @@ function AdminMaterialManager() {
                     <img src={spritesheetPreview} alt="preview" className="bg-slate-800 mt-2 rounded-md h-16 object-cover pixel-art" />
                   )}
                 </div>
+                </fieldset>
 
               </form>
             </div>
@@ -310,7 +316,12 @@ function AdminMaterialManager() {
             {/* Footer */}
             <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingMaterialId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingMaterialId && isDetailMode)}>
                 {loading ? "Saving…" : editingMaterialId ? "Save Changes" : "Create Material"}
               </Button>
             </div>

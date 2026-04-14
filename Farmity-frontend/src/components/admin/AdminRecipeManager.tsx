@@ -206,6 +206,7 @@ function AdminRecipeManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecipeID, setEditingRecipeID] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<RecipeDoc>({ ...EMPTY });
   const [loading, setLoading] = useState(false);
 
@@ -245,16 +246,19 @@ function AdminRecipeManager() {
   const resetForm = () => {
     setForm({ ...EMPTY, ingredients: [] });
     setEditingRecipeID(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
   const openEdit = (recipe: RecipeDoc) => {
     setForm({ ...recipe, ingredients: recipe.ingredients?.map((i) => ({ ...i })) || [] });
     setEditingRecipeID(recipe.recipeID);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -482,7 +486,7 @@ function AdminRecipeManager() {
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <Button size="sm" onClick={() => openEdit(recipe)}>Edit</Button>
+                  <Button size="sm" onClick={() => openEdit(recipe)}>Detail</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(recipe.recipeID)}>Delete</Button>
                 </div>
               </div>
@@ -505,11 +509,12 @@ function AdminRecipeManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingRecipeID ? `Edit — ${editingRecipeID}` : "Create New Recipe"}</CardTitle>
+              <CardTitle>{editingRecipeID ? `${isDetailMode ? "Detail" : "Edit"} — ${editingRecipeID}` : "Create New Recipe"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingRecipeID && isDetailMode} className="space-y-5">
 
                 {/* ─── Identity ─── */}
                 <section className="space-y-3">
@@ -643,13 +648,19 @@ function AdminRecipeManager() {
                     </div>
                   ))}
                 </section>
+                </fieldset>
               </form>
             </div>
 
             {/* Footer */}
             <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingRecipeID && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingRecipeID && isDetailMode)}>
                 {loading ? "Saving…" : editingRecipeID ? "Save Changes" : "Create Recipe"}
               </Button>
             </div>

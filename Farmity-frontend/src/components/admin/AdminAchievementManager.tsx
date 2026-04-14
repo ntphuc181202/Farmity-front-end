@@ -83,6 +83,7 @@ function AdminAchievementManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAchievementId, setEditingAchievementId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<AchievementDoc>({ ...EMPTY_ACHIEVEMENT });
   const [loading, setLoading] = useState(false);
 
@@ -108,10 +109,12 @@ function AdminAchievementManager() {
   const resetForm = () => {
     setForm({ ...EMPTY_ACHIEVEMENT, requirements: [{ ...EMPTY_REQUIREMENT }] });
     setEditingAchievementId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -124,6 +127,7 @@ function AdminAchievementManager() {
           : [{ ...EMPTY_REQUIREMENT }],
     });
     setEditingAchievementId(achievement.achievementId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -315,7 +319,7 @@ function AdminAchievementManager() {
                 <p className="truncate text-xs text-slate-500 mt-1">{achievement.description}</p>
               </div>
               <div className="flex shrink-0 gap-2">
-                <Button size="sm" onClick={() => openEdit(achievement)}>Edit</Button>
+                <Button size="sm" onClick={() => openEdit(achievement)}>Detail</Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(achievement.achievementId)}>
                   Delete
                 </Button>
@@ -341,11 +345,12 @@ function AdminAchievementManager() {
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto">
           <Card className="my-8 w-full max-w-4xl border border-slate-800 bg-slate-950 flex flex-col">
             <CardHeader className="shrink-0 border-b border-slate-800">
-              <CardTitle>{editingAchievementId ? `Edit - ${editingAchievementId}` : "Create New Achievement"}</CardTitle>
+              <CardTitle>{editingAchievementId ? `${isDetailMode ? "Detail" : "Edit"} - ${editingAchievementId}` : "Create New Achievement"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 overflow-y-auto p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
+                <fieldset disabled={!!editingAchievementId && isDetailMode} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label>Achievement ID *</Label>
@@ -443,6 +448,7 @@ function AdminAchievementManager() {
                     </div>
                   ))}
                 </div>
+                </fieldset>
               </form>
             </div>
 
@@ -457,7 +463,12 @@ function AdminAchievementManager() {
               >
                 Cancel
               </Button>
-              <Button type="button" onClick={() => handleSubmit()} disabled={loading}>
+              {editingAchievementId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button type="button" onClick={() => handleSubmit()} disabled={loading || (!!editingAchievementId && isDetailMode)}>
                 {loading ? "Saving..." : editingAchievementId ? "Save Changes" : "Create Achievement"}
               </Button>
             </div>

@@ -128,6 +128,7 @@ function AdminCombatSkillManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<CombatSkillDoc>({ ...EMPTY_SKILL });
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState("");
@@ -188,10 +189,12 @@ function AdminCombatSkillManager() {
     setIconFile(null);
     setIconPreview("");
     setEditingSkillId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -200,6 +203,7 @@ function AdminCombatSkillManager() {
     setIconFile(null);
     setIconPreview(skill.iconUrl || "");
     setEditingSkillId(skill.skillId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -403,7 +407,7 @@ function AdminCombatSkillManager() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={() => openEdit(skill)}>
-                  Edit
+                  Detail
                 </Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(skill.skillId)}>
                   Delete
@@ -430,11 +434,12 @@ function AdminCombatSkillManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-4xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingSkillId ? `Edit - ${editingSkillId}` : "Create New Combat Skill"}</CardTitle>
+              <CardTitle>{editingSkillId ? `${isDetailMode ? "Detail" : "Edit"} - ${editingSkillId}` : "Create New Combat Skill"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingSkillId && isDetailMode} className="space-y-5">
                 <section className="space-y-3">
                   <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">Base Fields</h3>
                   <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
@@ -661,6 +666,7 @@ function AdminCombatSkillManager() {
                     </div>
                   </section>
                 )}
+                </fieldset>
               </form>
             </div>
 
@@ -675,7 +681,12 @@ function AdminCombatSkillManager() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingSkillId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingSkillId && isDetailMode)}>
                 {loading ? "Saving..." : editingSkillId ? "Save Changes" : "Create Skill"}
               </Button>
             </div>

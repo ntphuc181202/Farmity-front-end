@@ -21,6 +21,7 @@ function AdminMediaManager() {
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -34,6 +35,7 @@ function AdminMediaManager() {
     setPreview("");
     setUploadDate("");
     setEditingId(null);
+    setIsDetailMode(false);
   };
 
   const fetchMedia = async () => {
@@ -103,10 +105,12 @@ function AdminMediaManager() {
     setUploadDate(item.upload_date ? item.upload_date.slice(0, 10) : "");
 
     setEditingId(item._id || item.id || null);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (editingId && isDetailMode) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -221,7 +225,7 @@ function AdminMediaManager() {
 
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => handleEdit(item)}>
-                    Edit
+                    Detail
                   </Button>
 
                   <Button
@@ -244,11 +248,12 @@ function AdminMediaManager() {
             <form onSubmit={handleSubmit} className="flex flex-col max-h-[90vh]">
               <CardHeader className="border-b border-slate-800">
                 <CardTitle>
-                  {editingId ? "Edit media" : "Create media"}
+                  {editingId ? (isDetailMode ? "Media detail" : "Edit media") : "Create media"}
                 </CardTitle>
               </CardHeader>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <fieldset disabled={!!editingId && isDetailMode} className="space-y-4">
                 <label className="flex items-center justify-center w-full h-28 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-slate-500 bg-slate-900">
                   <span className="text-sm text-slate-400">
                     Click to upload image
@@ -280,6 +285,7 @@ function AdminMediaManager() {
                   value={uploadDate}
                   onChange={(e) => setUploadDate(e.target.value)}
                 />
+                </fieldset>
               </div>
 
               <div className="border-t border-slate-800 p-4 flex justify-end gap-2">
@@ -291,7 +297,13 @@ function AdminMediaManager() {
                   Cancel
                 </Button>
 
-                <Button type="submit">
+                {editingId && isDetailMode && (
+                  <Button type="button" onClick={() => setIsDetailMode(false)}>
+                    Edit
+                  </Button>
+                )}
+
+                <Button type="submit" disabled={!!editingId && isDetailMode}>
                   {editingId ? "Save changes" : "Create media"}
                 </Button>
               </div>

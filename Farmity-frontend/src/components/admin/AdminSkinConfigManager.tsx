@@ -44,6 +44,7 @@ function AdminSkinConfigManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<SkinConfigDoc>({ ...EMPTY });
   const [spritesheetFile, setSpritesheetFile] = useState<File | null>(null);
   const [spritesheetPreview, setSpritesheetPreview] = useState("");
@@ -69,10 +70,12 @@ function AdminSkinConfigManager() {
     setSpritesheetFile(null);
     setSpritesheetPreview("");
     setEditingConfigId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -80,6 +83,7 @@ function AdminSkinConfigManager() {
     setForm({ ...sc });
     setSpritesheetPreview(sc.spritesheetUrl || "");
     setEditingConfigId(sc.configId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -231,7 +235,7 @@ function AdminSkinConfigManager() {
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button size="sm" onClick={() => openEdit(sc)}>Edit</Button>
+                <Button size="sm" onClick={() => openEdit(sc)}>Detail</Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(sc.configId)}>Delete</Button>
               </div>
             </div>
@@ -253,11 +257,12 @@ function AdminSkinConfigManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-lg">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingConfigId ? `Edit — ${editingConfigId}` : "New Skin Config"}</CardTitle>
+              <CardTitle>{editingConfigId ? `${isDetailMode ? "Detail" : "Edit"} — ${editingConfigId}` : "New Skin Config"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingConfigId && isDetailMode} className="space-y-5">
 
                 {/* ─── Identity ─── */}
                 <section className="space-y-3">
@@ -324,6 +329,7 @@ function AdminSkinConfigManager() {
                     </div>
                   )}
                 </section>
+                </fieldset>
 
               </form>
             </div>
@@ -331,7 +337,12 @@ function AdminSkinConfigManager() {
             {/* Footer */}
             <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }} disabled={loading}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingConfigId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingConfigId && isDetailMode)}>
                 {loading ? "Saving…" : editingConfigId ? "Save Changes" : "Create"}
               </Button>
             </div>

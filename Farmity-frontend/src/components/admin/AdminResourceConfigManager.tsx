@@ -54,6 +54,7 @@ function AdminResourceConfigManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResourceId, setEditingResourceId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<ResourceConfigDoc>({ ...EMPTY });
   const [spriteFile, setSpriteFile] = useState<File | null>(null);
   const [spritePreview, setSpritePreview] = useState("");
@@ -96,10 +97,12 @@ function AdminResourceConfigManager() {
     setSpriteFile(null);
     setSpritePreview("");
     setEditingResourceId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -119,6 +122,7 @@ function AdminResourceConfigManager() {
     setSpriteFile(null);
     setSpritePreview(resource.spriteUrl || "");
     setEditingResourceId(resource.resourceId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -338,7 +342,7 @@ function AdminResourceConfigManager() {
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button size="sm" onClick={() => openEdit(resource)}>Edit</Button>
+                <Button size="sm" onClick={() => openEdit(resource)}>Detail</Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(resource.resourceId)}>Delete</Button>
               </div>
             </div>
@@ -358,11 +362,12 @@ function AdminResourceConfigManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingResourceId ? `Edit - ${editingResourceId}` : "Create New Resource Config"}</CardTitle>
+              <CardTitle>{editingResourceId ? `${isDetailMode ? "Detail" : "Edit"} - ${editingResourceId}` : "Create New Resource Config"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4">
+                <fieldset disabled={!!editingResourceId && isDetailMode} className="space-y-4">
                 <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label>Resource ID *</Label>
@@ -505,12 +510,18 @@ function AdminResourceConfigManager() {
                     </div>
                   ))}
                 </section>
+                </fieldset>
               </form>
             </div>
 
             <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingResourceId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingResourceId && isDetailMode)}>
                 {loading ? "Saving..." : editingResourceId ? "Save Changes" : "Create Resource"}
               </Button>
             </div>

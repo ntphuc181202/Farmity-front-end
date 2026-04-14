@@ -324,6 +324,7 @@ function AdminItemManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItemID, setEditingItemID] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<ItemDoc>({ ...EMPTY });
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState("");
@@ -380,10 +381,12 @@ function AdminItemManager() {
     setSpriteFile(null);
     setSpritePreview("");
     setEditingItemID(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -393,6 +396,7 @@ function AdminItemManager() {
     setSpriteFile(null);
     setSpritePreview(item.structureInteractionSpriteUrl || "");
     setEditingItemID(item.itemID);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -793,7 +797,7 @@ function AdminItemManager() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={() => openEdit(item)}>
-                  Edit
+                  Detail
                 </Button>
                 <Button
                   size="sm"
@@ -839,12 +843,13 @@ function AdminItemManager() {
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
               <CardTitle>
-                {editingItemID ? `Edit — ${editingItemID}` : "Create New Item"}
+                {editingItemID ? `${isDetailMode ? "Detail" : "Edit"} — ${editingItemID}` : "Create New Item"}
               </CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingItemID && isDetailMode} className="space-y-5">
                 {/* ─── Base Fields ─── */}
                 <section className="space-y-3">
                   <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">
@@ -1081,6 +1086,7 @@ function AdminItemManager() {
                   spritePreview={spritePreview}
                   onSpritePick={handleSpritePick}
                 />
+                </fieldset>
               </form>
             </div>
 
@@ -1096,7 +1102,12 @@ function AdminItemManager() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingItemID && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingItemID && isDetailMode)}>
                 {loading
                   ? "Saving…"
                   : editingItemID
