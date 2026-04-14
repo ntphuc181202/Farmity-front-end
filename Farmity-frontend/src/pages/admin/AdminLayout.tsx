@@ -214,12 +214,6 @@ function AdminLayout() {
             </span>
             <span>Analytics</span>
           </NavLink>
-          <NavLink to="/admin/enemy-stats" className={linkClass}>
-            <span className="inline-flex justify-center items-center bg-red-500/10 rounded-md w-6 h-6 font-semibold text-red-300 text-xs">
-              En
-            </span>
-            <span>Enemy Stats</span>
-          </NavLink>
         </nav>
 
         <div className="px-3 py-4 border-slate-800 border-t">
@@ -434,16 +428,6 @@ function AdminLayout() {
                     An
                   </span>
                   <span>Analytics</span>
-                </NavLink>
-                <NavLink
-                  to="/admin/enemy-stats"
-                  onClick={() => setMobileNavOpen(false)}
-                  className={linkClass}
-                >
-                  <span className="inline-flex justify-center items-center bg-red-500/10 rounded-md w-6 h-6 font-semibold text-red-300 text-xs">
-                    En
-                  </span>
-                  <span>Enemy Stats</span>
                 </NavLink>
               </nav>
               <div className="px-3 py-4 border-slate-800 border-t">
