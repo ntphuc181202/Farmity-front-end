@@ -57,8 +57,8 @@ function App() {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase border-b-2 transition-colors ${
       isActive
-        ? "text-amber-200 border-amber-200"
-        : "text-emerald-50/90 border-transparent hover:text-emerald-50"
+        ? "text-[#fef3c7] border-[#f59e0b]"
+        : "text-[#eaf6ea] border-transparent hover:text-[#fff7dd]"
     }`;
 
   const location = useLocation();
@@ -109,8 +109,8 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col bg-stardew-bg min-h-screen">
-      <header className="bg-gradient-to-b from-[#1d3d2a] via-[#376647] to-[#6d8f4a] text-white">
+    <div className="flex flex-col bg-[#f3f1e6] min-h-screen">
+      <header className="bg-gradient-to-b from-[#1f5a3f] via-[#2f7a52] to-[#4f9b68] text-white shadow-[0_6px_18px_rgba(23,61,44,0.35)]">
         <div className="flex justify-between items-center gap-4 mx-auto px-4 sm:px-6 py-3 max-w-6xl">
           <Link to="/" className="flex items-center shrink-0">
             <img
@@ -243,7 +243,7 @@ function App() {
           {/* Mobile menu toggle */}
           <button
             type="button"
-            className="md:hidden inline-flex justify-center items-center bg-white/10 ml-auto border border-white/50 rounded w-9 h-9 text-white text-sm"
+            className="md:hidden inline-flex justify-center items-center bg-[#163e2b]/35 ml-auto border border-[#c9e7d3]/60 rounded w-9 h-9 text-[#eefaf0] text-sm"
             onClick={() => setMobileNavOpen((v) => !v)}
           >
             {mobileNavOpen ? "×" : "☰"}
@@ -251,7 +251,7 @@ function App() {
         </div>
         {/* Mobile nav */}
         {mobileNavOpen && (
-          <div className="md:hidden bg-[#2f5f3a]/85 border-white/20 border-t">
+          <div className="md:hidden bg-[#215e41]/95 border-[#c9e7d3]/30 border-t">
             <div className="flex flex-wrap justify-center items-center gap-2 mx-auto px-4 py-2 max-w-6xl">
               <NavLink
                 to="/"
@@ -260,8 +260,8 @@ function App() {
                 className={({ isActive }) =>
                   `px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
                     isActive
-                      ? "bg-yellow-300 text-[#041649]"
-                      : "bg-white/10 text-white/90"
+                      ? "bg-[#f7d87c] text-[#163e2b]"
+                      : "bg-[#163e2b]/40 text-[#eefaf0]"
                   }`
                 }
               >
@@ -273,19 +273,19 @@ function App() {
                 className={({ isActive }) =>
                   `px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
                     isActive
-                      ? "bg-yellow-300 text-[#041649]"
-                      : "bg-white/10 text-white/90"
+                      ? "bg-[#f7d87c] text-[#163e2b]"
+                      : "bg-[#163e2b]/40 text-[#eefaf0]"
                   }`
                 }
               >
                 Blog
               </NavLink>
-              {["Forums", "Wiki", "Media", "Merch", "FAQ", "Tabletop"].map(
+              {["News", "Media", "FAQ", "Support", "Download", "Wiki"].map(
                 (label) => (
                   <a
                     key={label}
                     href="#"
-                    className="bg-white/10 px-3 py-1.5 rounded-full font-bold text-white/90 text-xs uppercase tracking-wide"
+                    className="bg-[#163e2b]/40 px-3 py-1.5 rounded-full font-bold text-[#eefaf0] text-xs uppercase tracking-wide"
                     onClick={() => setMobileNavOpen(false)}
                   >
                     {label}
@@ -314,14 +314,13 @@ function App() {
         </Routes>
       </main>
 
-      <footer className="bg-[#f5efdf] px-6 py-6 pb-8 border-stardew-green-dark/40 border-t text-center">
+      <footer className="bg-gradient-to-b from-[#f3ecd0] to-[#e8ddb9] px-6 py-6 pb-8 border-[#8fa77f]/40 border-t text-center">
         <div className="mx-auto max-w-[900px]">
-          <p className="mb-1 text-stardew-brown-soft text-sm">
-            © {new Date().getFullYear()} Stardewvalley · Inspired by Stardew
-            Valley and other farming games.
+          <p className="mb-1 text-[#5a4a2f] text-sm">
+            © {new Date().getFullYear()} Farmity · A cozy farm adventure world.
           </p>
-          <p className="text-stardew-brown-soft/80 text-xs">
-            Stardew Valley © ConcernedApe LLC. This is an unofficial fan page.
+          <p className="text-[#6f5d3f]/80 text-xs">
+            Community fan site for farm game lovers.
           </p>
         </div>
       </footer>

@@ -67,7 +67,7 @@ function HomePage() {
   const base = import.meta.env.BASE_URL;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-stardew-bg overflow-hidden">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-[#f3f1e6] overflow-hidden">
       <section className="relative min-h-[115vh] overflow-hidden" ref={heroRef}>
         {/* Background */}
         <div
@@ -123,7 +123,7 @@ function HomePage() {
           <div className="flex-1 flex items-center justify-center pt-4 sm:pt-5 md:pt-6">
             <img
               src={`${base}img/herologo.png`}
-              alt="Stardewvalley"
+              alt="Farmity"
               className="h-44 sm:h-60 md:h-72 lg:h-88 xl:h-96 w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
             />
           </div>
@@ -139,13 +139,13 @@ function HomePage() {
         </div>
       </section>
 
-      <div className="bg-[#f5efdf]">
+      <div className="bg-gradient-to-b from-[#f5efd7] to-[#ece2bf]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8 sm:space-y-10">
           <section className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#2f5f3a] mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#315f3f] mb-2">
               You&apos;re moving to the Valley...
             </h2>
-            <p className="text-[0.98rem] sm:text-base text-stardew-brown-soft leading-relaxed">
+            <p className="text-[0.98rem] sm:text-base text-[#5d4a33] leading-relaxed">
               You&apos;ve inherited your grandfather&apos;s old farm plot in
               Stardew Valley. Armed with hand-me-down tools and a few coins, you
               set out to begin your new life!
@@ -153,8 +153,8 @@ function HomePage() {
           </section>
 
           <section>
-            <div className="rounded-lg overflow-hidden mb-4 max-w-2xl mx-auto relative">
-              <div className="relative aspect-[4/3] sm:aspect-video bg-stardew-green-dark/10">
+            <div className="rounded-2xl overflow-hidden mb-4 max-w-2xl mx-auto relative shadow-[0_14px_28px_rgba(60,84,44,0.2)] border border-[#a6ba90]">
+              <div className="relative aspect-[4/3] sm:aspect-video bg-[#5f7f4e]/10">
                 <img
                   src={`${base}img/${FEATURE_IMAGES[slide]}`}
                   alt={`Feature ${slide + 1}: ${FEATURES[slide].title}`}
@@ -206,13 +206,13 @@ function HomePage() {
                 </svg>
               </button>
             </div>
-            <h3 className="text-xl font-bold text-[#2f5f3a] mb-3 text-center mt-6">
+            <h3 className="text-xl font-bold text-[#315f3f] mb-3 text-center mt-6">
               Features
             </h3>
-            <ul className="space-y-1.5 text-[0.98rem] text-stardew-brown-soft leading-relaxed">
+            <ul className="space-y-1.5 text-[0.98rem] text-[#5d4a33] leading-relaxed">
               {FEATURES.map((item) => (
                 <li key={item.title}>
-                  <span className="font-semibold text-[#2f5f3a]">
+                  <span className="font-semibold text-[#315f3f]">
                     {item.title}:
                   </span>{" "}
                   {item.desc}
@@ -235,19 +235,19 @@ function HomePage() {
               ].map((store) => (
                 <span
                   key={store}
-                  className="px-2.5 py-1 rounded text-xs sm:text-sm font-medium text-stardew-brown-soft"
+                  className="px-2.5 py-1 rounded text-xs sm:text-sm font-medium text-[#5d4a33]"
                 >
                   {store}
                 </span>
               ))}
             </div>
-            <p className="text-[0.75rem] text-stardew-brown-soft">
+            <p className="text-[0.75rem] text-[#6f5d3f]">
               This is a fanmade landing page inspired by{" "}
               <a
                 href="https://www.Stardewvalley.net/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#2f5f3a] underline"
+                className="text-[#315f3f] underline"
               >
                 Stardew Valley
               </a>
