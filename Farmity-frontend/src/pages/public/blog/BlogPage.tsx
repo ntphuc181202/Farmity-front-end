@@ -53,8 +53,8 @@ function BlogPage() {
       <div className="max-w-[900px] mx-auto px-4 sm:px-6">
         <header className="mb-32 flex flex-col items-center justify-center gap-2">
           <img
-            src={`${base}img/logo.png`}
-            alt="Stardewvalley logo"
+            src={`${base}img/herologo.png`}
+            alt="Farmity logo"
             className="h-24 sm:h-32 md:h-[260px] drop-shadow-[0_4px_0_rgba(0,0,0,0.6)] mb-8"
           />
           <img

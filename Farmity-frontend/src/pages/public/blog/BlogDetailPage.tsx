@@ -65,8 +65,8 @@ function BlogDetailPage() {
           </button>
 
           <img
-            src={`${base}img/logo.png`}
-            alt="Stardewvalley logo"
+              src={`${base}img/herologo.png`}
+              alt="Farmity logo"
             className="h-20 sm:h-28 md:h-40 drop-shadow-[0_4px_0_rgba(0,0,0,0.6)]"
           />
         </header>

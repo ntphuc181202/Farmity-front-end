@@ -230,7 +230,7 @@ function WikiPage() {
         {/* HEADER */}
         <header className="mb-10 flex flex-col items-center">
           <img
-            src={`${base}img/logo.png`}
+            src={`${base}img/herologo.png`}
             alt="Game Logo"
             className="h-24 sm:h-32 md:h-[200px] mb-6"
           />
