@@ -112,6 +112,13 @@ function App() {
     <div className="flex flex-col bg-stardew-bg min-h-screen">
       <header className="bg-gradient-to-b from-[#041649] via-[#0a4ea3] to-[#25a5dd] text-white">
         <div className="flex justify-between items-center gap-4 mx-auto px-4 sm:px-6 py-3 max-w-6xl">
+          <Link to="/" className="flex items-center shrink-0">
+            <img
+              src="/img/headbarlogo.png"
+              alt="Farmity"
+              className="h-10 sm:h-12 md:h-14 w-auto drop-shadow-[0_4px_16px_rgba(0,0,0,0.45)]"
+            />
+          </Link>
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-3 sm:gap-4">
             <NavLink to="/" end className={navLinkClass}>

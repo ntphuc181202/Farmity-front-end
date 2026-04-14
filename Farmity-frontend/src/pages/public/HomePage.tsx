@@ -120,11 +120,11 @@ function HomePage() {
         {/* Overlay Content */}
         <div className="relative z-10 flex flex-col min-h-[115vh]">
           {/* Logo */}
-          <div className="flex-1 flex items-center justify-center pt-20 sm:pt-24 md:pt-28">
+          <div className="flex-1 flex items-center justify-center pt-4 sm:pt-5 md:pt-6">
             <img
-              src={`${base}img/logo.png`}
+              src={`${base}img/herologo.png`}
               alt="Stardewvalley"
-              className="h-28 sm:h-36 md:h-48 lg:h-56 xl:h-64 w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
+              className="h-44 sm:h-60 md:h-72 lg:h-88 xl:h-96 w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
             />
           </div>
 
