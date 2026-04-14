@@ -12,10 +12,11 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 function AdminLayout() {
   const HEARTBEAT_VISIBLE_INTERVAL_MS = 15000;
-  const HEARTBEAT_HIDDEN_INTERVAL_MS = 60000;
+  const HEARTBEAT_HIDDEN_INTERVAL_MS = 15000;
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const kickedRef = useRef(false);
+  const closeLogoutSentRef = useRef(false);
 
   const forceKickToLogin = () => {
     if (kickedRef.current) return;
@@ -76,6 +77,45 @@ function AdminLayout() {
       }, getHeartbeatInterval());
     };
 
+    const sendCloseLogout = () => {
+      if (closeLogoutSentRef.current) return;
+      closeLogoutSentRef.current = true;
+
+      const base = ((((import.meta as any).env?.VITE_API_BASE_URL as string) || "")).replace(/\/$/, "");
+      const endpoint = base ? `${base}/auth/logout` : "/auth/logout";
+
+      let accessToken = "";
+      try {
+        const raw = localStorage.getItem("auth");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          accessToken = parsed?.access_token || "";
+        }
+      } catch {
+        // Ignore parse error and try cookie-only logout.
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      try {
+        void fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: "{}",
+          credentials: "include",
+          keepalive: true,
+        });
+      } catch {
+        // Best effort only during page teardown.
+      }
+    };
+
     void checkSession();
     void sendHeartbeat();
     scheduleHeartbeat();
@@ -90,8 +130,18 @@ function AdminLayout() {
       scheduleHeartbeat();
     };
 
+    const onPageHide = () => {
+      sendCloseLogout();
+    };
+
+    const onBeforeUnload = () => {
+      sendCloseLogout();
+    };
+
     window.addEventListener("focus", onFocus);
     window.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("beforeunload", onBeforeUnload);
 
     return () => {
       disposed = true;
@@ -100,6 +150,8 @@ function AdminLayout() {
       }
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onBeforeUnload);
     };
   }, [navigate]);
 
