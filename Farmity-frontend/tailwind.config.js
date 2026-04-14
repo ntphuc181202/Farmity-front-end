@@ -6,13 +6,13 @@ export default {
     extend: {
       colors: {
         stardew: {
-          bg: '#f8f6f0',
-          card: '#fffef9',
-          'green-dark': '#2d5a27',
-          green: '#3d7c2f',
-          'green-light': '#5a9e4a',
-          brown: '#4a3728',
-          'brown-soft': '#6b5344',
+          bg: '#f2eee3',
+          card: '#fffdf7',
+          'green-dark': '#2f5f3a',
+          green: '#4f7d4e',
+          'green-light': '#79a36d',
+          brown: '#4f3a2a',
+          'brown-soft': '#7a6753',
         },
       },
       fontFamily: {

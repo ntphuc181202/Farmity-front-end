@@ -1,6 +1,6 @@
 @media (min-width: 768px) {
   .blog-page-bg {
-    background-color: #2f97e3;
+    background-color: #d7e5c8;
     background-image: url("/img/background.png");
     background-repeat: no-repeat;
     background-size: cover;
@@ -8,26 +8,24 @@
   }
 
   .blog-article-frame {
-    /* Inner paper background + wood-like border */
+    /* Cream paper center with earthy frame accents */
     background:
-      /* paper */
-      linear-gradient(#fdf1b4, #f8e39e) padding-box,
-      /* subtle wood grain */
+      linear-gradient(#fff9ec, #f7ecd6) padding-box,
         repeating-linear-gradient(
           -45deg,
-          #8a4a1f,
-          #8a4a1f 4px,
-          #7a3f1a 4px,
-          #7a3f1a 7px
+          #6a4b34,
+          #6a4b34 4px,
+          #5b3f2c 4px,
+          #5b3f2c 7px
         ),
-      /* outer highlight/shadow */ linear-gradient(to bottom, #c9893b, #5a2a10)
+      linear-gradient(to bottom, #8aa85f, #4e6b3e)
         border-box;
     background-origin: padding-box, border-box, border-box;
     background-clip: padding-box, border-box, border-box;
     border: 14px solid transparent;
     border-radius: 18px;
     box-shadow:
-      0 4px 0 #4b230c,
+      0 4px 0 #3b522f,
       0 0 0 2px rgba(0, 0, 0, 0.15);
     overflow: hidden;
   }

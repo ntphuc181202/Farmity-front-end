@@ -57,8 +57,8 @@ function App() {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 text-xs sm:text-sm font-bold tracking-wide uppercase border-b-2 transition-colors ${
       isActive
-        ? "text-yellow-300 border-yellow-300"
-        : "text-white/90 border-transparent hover:text-white"
+        ? "text-amber-200 border-amber-200"
+        : "text-emerald-50/90 border-transparent hover:text-emerald-50"
     }`;
 
   const location = useLocation();
@@ -110,7 +110,7 @@ function App() {
 
   return (
     <div className="flex flex-col bg-stardew-bg min-h-screen">
-      <header className="bg-gradient-to-b from-[#041649] via-[#0a4ea3] to-[#25a5dd] text-white">
+      <header className="bg-gradient-to-b from-[#1d3d2a] via-[#376647] to-[#6d8f4a] text-white">
         <div className="flex justify-between items-center gap-4 mx-auto px-4 sm:px-6 py-3 max-w-6xl">
           <Link to="/" className="flex items-center shrink-0">
             <img
@@ -251,7 +251,7 @@ function App() {
         </div>
         {/* Mobile nav */}
         {mobileNavOpen && (
-          <div className="md:hidden bg-[#0a4ea3]/80 border-white/20 border-t">
+          <div className="md:hidden bg-[#2f5f3a]/85 border-white/20 border-t">
             <div className="flex flex-wrap justify-center items-center gap-2 mx-auto px-4 py-2 max-w-6xl">
               <NavLink
                 to="/"
@@ -314,7 +314,7 @@ function App() {
         </Routes>
       </main>
 
-      <footer className="bg-[#fef6ad] px-6 py-6 pb-8 border-stardew-green-dark/40 border-t text-center">
+      <footer className="bg-[#f5efdf] px-6 py-6 pb-8 border-stardew-green-dark/40 border-t text-center">
         <div className="mx-auto max-w-[900px]">
           <p className="mb-1 text-stardew-brown-soft text-sm">
             © {new Date().getFullYear()} Stardewvalley · Inspired by Stardew

@@ -139,10 +139,10 @@ function HomePage() {
         </div>
       </section>
 
-      <div className="bg-[#fef6ad]">
+      <div className="bg-[#f5efdf]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8 sm:space-y-10">
           <section className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0d5e9c] mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#2f5f3a] mb-2">
               You&apos;re moving to the Valley...
             </h2>
             <p className="text-[0.98rem] sm:text-base text-stardew-brown-soft leading-relaxed">
@@ -206,13 +206,13 @@ function HomePage() {
                 </svg>
               </button>
             </div>
-            <h3 className="text-xl font-bold text-[#0d5e9c] mb-3 text-center mt-6">
+            <h3 className="text-xl font-bold text-[#2f5f3a] mb-3 text-center mt-6">
               Features
             </h3>
             <ul className="space-y-1.5 text-[0.98rem] text-stardew-brown-soft leading-relaxed">
               {FEATURES.map((item) => (
                 <li key={item.title}>
-                  <span className="font-semibold text-[#0d5e9c]">
+                  <span className="font-semibold text-[#2f5f3a]">
                     {item.title}:
                   </span>{" "}
                   {item.desc}
@@ -247,7 +247,7 @@ function HomePage() {
                 href="https://www.Stardewvalley.net/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#0d5e9c] underline"
+                className="text-[#2f5f3a] underline"
               >
                 Stardew Valley
               </a>
