@@ -53,14 +53,9 @@ function BlogPage() {
       <div className="max-w-[900px] mx-auto px-4 sm:px-6">
         <header className="mb-32 flex flex-col items-center justify-center gap-2">
           <img
-            src={`${base}img/herologo.png`}
-            alt="Farmity logo"
-            className="h-24 sm:h-32 md:h-[260px] drop-shadow-[0_4px_0_rgba(0,0,0,0.6)] mb-8"
-          />
-          <img
             src={`${base}img/dev.png`}
             alt="Developer avatar"
-            className="w-full max-w-[320px] h-auto rounded-md border border-[#d58b2a] shadow-[0_2px_0_#a7611c] bg-[#fdf1b4]"
+            className="w-full max-w-[440px] h-auto object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.28)]"
           />
         </header>
 

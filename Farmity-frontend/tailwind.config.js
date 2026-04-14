@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         stardew: {
-          bg: '#f8f6f0',
+         
           card: '#fffef9',
           'green-dark': '#2d5a27',
           green: '#3d7c2f',

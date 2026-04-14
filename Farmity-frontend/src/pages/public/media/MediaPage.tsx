@@ -15,6 +15,7 @@ function MediaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const base = import.meta.env.BASE_URL || "/";
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -35,6 +36,13 @@ function MediaPage() {
   return (
     <div className="blog-page-bg min-h-screen py-4">
       <div className="max-w-[900px] mx-auto px-4">
+        <header className="mb-10 flex flex-col items-center justify-center gap-2">
+          <img
+            src={`${base}img/media.png`}
+            alt="Media artwork"
+            className="w-full max-w-[360px] max-h-[180px] h-auto object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.28)]"
+          />
+        </header>
 
         {loading && (
           <p className="text-center text-[#fdf6b3]">Loading media...</p>
