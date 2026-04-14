@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import mediaApi from "../../../api/mediaApi";
+import ImageLightbox from "../../../components/ui/ImageLightbox";
 
 function MediaDetailPage() {
   const { id } = useParams();
@@ -8,6 +9,7 @@ function MediaDetailPage() {
 
   const [media, setMedia] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -42,10 +44,16 @@ function MediaDetailPage() {
         <article className="blog-article-frame">
 
           {media.file_url && (
-            <img
-              src={media.file_url}
-              className="w-full h-72 object-cover rounded-t-md"
-            />
+            <button
+              type="button"
+              className="block w-full cursor-zoom-in"
+              onClick={() => setIsLightboxOpen(true)}
+            >
+              <img
+                src={media.file_url}
+                className="w-full h-72 object-cover rounded-t-md"
+              />
+            </button>
           )}
 
           <div className="px-4 py-4">
@@ -66,6 +74,14 @@ function MediaDetailPage() {
         </article>
 
       </div>
+
+      {isLightboxOpen && media?.file_url && (
+        <ImageLightbox
+          src={media.file_url}
+          alt={media.description || "Media image"}
+          onClose={() => setIsLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import newsApi from "../../../api/newsApi";
 import { useNavigate } from "react-router-dom";
 import he from "he";
+import useAutoRefresh from "../../../hooks/useAutoRefresh";
 
 interface NewsItem {
   _id?: string;
@@ -19,21 +20,30 @@ function NewsPage() {
   const navigate = useNavigate();
   const base = import.meta.env.BASE_URL || "/";
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const res = await newsApi.getAllNews();
-        setNews(res.data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load news.");
-      } finally {
+  const fetchNews = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
+
+    try {
+      const res = await newsApi.getAllNews();
+      setNews(res.data || []);
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load news.");
+    } finally {
+      if (isInitial) {
         setLoading(false);
       }
-    };
-
-    fetchNews();
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchNews(true);
+  }, [fetchNews]);
+
+  useAutoRefresh(fetchNews, 12000);
 
   return (
     <div className="blog-page-bg min-h-screen py-4">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import blogApi from "../../../api/blogApi";
 import he from "he";
+import ImageLightbox from "../../../components/ui/ImageLightbox";
 
 interface BlogDetail {
   _id?: string;
@@ -17,6 +18,7 @@ function BlogDetailPage() {
   const [post, setPost] = useState<BlogDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt?: string } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -103,10 +105,25 @@ function BlogDetailPage() {
                   dangerouslySetInnerHTML={{
                     __html: he.decode(post.content),
                   }}
+                  onClick={(event) => {
+                    const target = event.target as HTMLElement;
+                    if (target.tagName !== "IMG") return;
+                    const image = target as HTMLImageElement;
+                    if (!image.src) return;
+                    setLightboxImage({ src: image.src, alt: image.alt });
+                  }}
                 />
               )}
             </div>
           </article>
+        )}
+
+        {lightboxImage && (
+          <ImageLightbox
+            src={lightboxImage.src}
+            alt={lightboxImage.alt || post?.title || "Blog image"}
+            onClose={() => setLightboxImage(null)}
+          />
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import newsApi from "../../../api/newsApi";
 import he from "he";
+import ImageLightbox from "../../../components/ui/ImageLightbox";
 
 function NewsDetailPage() {
   const { id } = useParams();
@@ -9,6 +10,7 @@ function NewsDetailPage() {
 
   const [news, setNews] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -43,10 +45,16 @@ function NewsDetailPage() {
         <article className="blog-article-frame">
 
           {news.thumbnailUrl && (
-            <img
-              src={news.thumbnailUrl}
-              className="w-full h-72 object-cover rounded-t-md"
-            />
+            <button
+              type="button"
+              className="block w-full cursor-zoom-in"
+              onClick={() => setIsLightboxOpen(true)}
+            >
+              <img
+                src={news.thumbnailUrl}
+                className="w-full h-72 object-cover rounded-t-md"
+              />
+            </button>
           )}
 
           <div className="px-4 py-4">
@@ -72,6 +80,14 @@ function NewsDetailPage() {
           </div>
         </article>
       </div>
+
+      {isLightboxOpen && news?.thumbnailUrl && (
+        <ImageLightbox
+          src={news.thumbnailUrl}
+          alt={news.title || "News image"}
+          onClose={() => setIsLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 }

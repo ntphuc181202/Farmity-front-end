@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import blogApi from "../../../api/blogApi";
 import he from "he";
+import useAutoRefresh from "../../../hooks/useAutoRefresh";
 
 interface BlogPost {
   _id?: string;
@@ -17,29 +18,31 @@ function BlogPage() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  useEffect(() => {
-    let mounted = true;
+  const fetchPosts = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
 
-    const fetchPosts = async () => {
-      try {
-        const res = await blogApi.getAllBlogs();
-        if (!mounted) return;
-        const data = Array.isArray(res.data) ? res.data : [];
-        setPosts(data);
-      } catch (err) {
-        console.error("Failed to load public blogs:", err);
-        if (mounted) setError("Failed to load blog posts.");
-      } finally {
-        if (mounted) setLoading(false);
+    try {
+      const res = await blogApi.getAllBlogs();
+      const data = Array.isArray(res.data) ? res.data : [];
+      setPosts(data);
+      setError("");
+    } catch (err) {
+      console.error("Failed to load public blogs:", err);
+      setError("Failed to load blog posts.");
+    } finally {
+      if (isInitial) {
+        setLoading(false);
       }
-    };
-
-    fetchPosts();
-
-    return () => {
-      mounted = false;
-    };
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchPosts(true);
+  }, [fetchPosts]);
+
+  useAutoRefresh(fetchPosts, 12000);
 
   const base = import.meta.env.BASE_URL || "/";
 
@@ -96,12 +99,18 @@ function BlogPage() {
                     </header>
 
                     {post.content && (
-                      <div
-                        className="blog-article-content prose prose-sm max-w-none text-[#5a3b19]"
-                        dangerouslySetInnerHTML={{
-                          __html: he.decode(post.content),
-                        }}
-                      />
+                      <p className="text-sm text-[#5a3b19] leading-relaxed">
+                        {(() => {
+                          const plainText = he
+                            .decode(post.content)
+                            .replace(/<[^>]+>/g, " ")
+                            .replace(/\s+/g, " ")
+                            .trim();
+                          return plainText.length > 220
+                            ? `${plainText.slice(0, 220)}...`
+                            : plainText;
+                        })()}
+                      </p>
                     )}
                   </div>
                 </article>
