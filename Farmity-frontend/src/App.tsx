@@ -285,7 +285,7 @@ function App() {
       <footer className="bg-gradient-to-b from-[#f3ecd0] to-[#e8ddb9] px-6 py-6 pb-8 border-[#8fa77f]/40 border-t text-center">
         <div className="mx-auto max-w-[900px]">
           <p className="mb-1 text-[#5a4a2f] text-sm">
-            © {new Date().getFullYear()} Farmity · A cozy farm adventure world.
+            © {new Date().getFullYear()} Peaceful Farmstead · A cozy farm adventure.
           </p>
           <p className="text-[#6f5d3f]/80 text-xs">
             Community fan site for farm game lovers.

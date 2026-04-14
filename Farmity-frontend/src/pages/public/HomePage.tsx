@@ -41,6 +41,14 @@ const FEATURES = [
   },
 ] as const;
 
+const DUCK_FLOCK = [
+  { top: "45%", size: 82, delay: "0s", duration: "14s", opacity: 0.95 },
+  { top: "52%", size: 96, delay: "-3.5s", duration: "16s", opacity: 1 },
+  { top: "39%", size: 74, delay: "-7s", duration: "13s", opacity: 0.88 },
+  { top: "58%", size: 88, delay: "-10.5s", duration: "17s", opacity: 0.92 },
+  { top: "48%", size: 68, delay: "-12s", duration: "12.5s", opacity: 0.8 },
+] as const;
+
 function HomePage() {
   const [slide, setSlide] = useState(0);
   const [parallaxY, setParallaxY] = useState(0);
@@ -109,13 +117,23 @@ function HomePage() {
           style={{ animationDelay: "-35s", animationDuration: "105s" }}
         />
 
-        {/* Bird */}
-        <img
-          src={`${base}img/bird.gif`}
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute top-[50%] left-[110%] w-[100px] -translate-y-1/2 z-[2] animate-bird"
-        />
+        {/* Duck flock */}
+        {DUCK_FLOCK.map((duck, index) => (
+          <img
+            key={`${duck.top}-${index}`}
+            src={`${base}img/bird.gif`}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute left-[110%] -translate-y-1/2 z-[2] animate-bird"
+            style={{
+              top: duck.top,
+              width: `${duck.size}px`,
+              animationDelay: duck.delay,
+              animationDuration: duck.duration,
+              opacity: duck.opacity,
+            }}
+          />
+        ))}
 
         {/* Overlay Content */}
         <div className="relative z-10 flex flex-col min-h-[115vh]">
