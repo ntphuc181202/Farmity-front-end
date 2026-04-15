@@ -20,6 +20,13 @@ img.pixel-art {
     @apply text-inherit no-underline;
   }
 
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    opacity: 1;
+    -webkit-text-fill-color: currentColor;
+  }
+
   @keyframes cloudFloat {
     from {
       left: -50px;

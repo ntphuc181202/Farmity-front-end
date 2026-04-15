@@ -551,7 +551,7 @@ function AdminCombatSkillManager() {
                         value={Number(form.requiredWeaponType ?? 0)}
                         onChange={(e) => setNum("requiredWeaponType", e.target.value)}
                         disabled={(form.ownership || "PlayerSkill") === "PlayerSkill"}
-                        className="flex bg-slate-900 disabled:opacity-60 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
+                        className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {Object.entries(WEAPON_TYPE_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>
