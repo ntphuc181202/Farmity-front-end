@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import blogApi from "../../../api/blogApi";
 import he from "he";
+import useAutoRefresh from "../../../hooks/useAutoRefresh";
 
 interface BlogPost {
   _id?: string;
@@ -17,29 +18,31 @@ function BlogPage() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  useEffect(() => {
-    let mounted = true;
+  const fetchPosts = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
 
-    const fetchPosts = async () => {
-      try {
-        const res = await blogApi.getAllBlogs();
-        if (!mounted) return;
-        const data = Array.isArray(res.data) ? res.data : [];
-        setPosts(data);
-      } catch (err) {
-        console.error("Failed to load public blogs:", err);
-        if (mounted) setError("Failed to load blog posts.");
-      } finally {
-        if (mounted) setLoading(false);
+    try {
+      const res = await blogApi.getAllBlogs();
+      const data = Array.isArray(res.data) ? res.data : [];
+      setPosts(data);
+      setError("");
+    } catch (err) {
+      console.error("Failed to load public blogs:", err);
+      setError("Failed to load blog posts.");
+    } finally {
+      if (isInitial) {
+        setLoading(false);
       }
-    };
-
-    fetchPosts();
-
-    return () => {
-      mounted = false;
-    };
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchPosts(true);
+  }, [fetchPosts]);
+
+  useAutoRefresh(fetchPosts, 12000);
 
   const base = import.meta.env.BASE_URL || "/";
 
@@ -53,14 +56,9 @@ function BlogPage() {
       <div className="max-w-[900px] mx-auto px-4 sm:px-6">
         <header className="mb-32 flex flex-col items-center justify-center gap-2">
           <img
-            src={`${base}img/logo.png`}
-            alt="Stardewvalley logo"
-            className="h-24 sm:h-32 md:h-[260px] drop-shadow-[0_4px_0_rgba(0,0,0,0.6)] mb-8"
-          />
-          <img
             src={`${base}img/dev.png`}
             alt="Developer avatar"
-            className="w-full max-w-[320px] h-auto rounded-md border border-[#d58b2a] shadow-[0_2px_0_#a7611c] bg-[#fdf1b4]"
+            className="w-full max-w-[440px] h-auto object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.28)]"
           />
         </header>
 
@@ -101,12 +99,18 @@ function BlogPage() {
                     </header>
 
                     {post.content && (
-                      <div
-                        className="blog-article-content prose prose-sm max-w-none text-[#5a3b19]"
-                        dangerouslySetInnerHTML={{
-                          __html: he.decode(post.content),
-                        }}
-                      />
+                      <p className="text-sm text-[#5a3b19] leading-relaxed">
+                        {(() => {
+                          const plainText = he
+                            .decode(post.content)
+                            .replace(/<[^>]+>/g, " ")
+                            .replace(/\s+/g, " ")
+                            .trim();
+                          return plainText.length > 220
+                            ? `${plainText.slice(0, 220)}...`
+                            : plainText;
+                        })()}
+                      </p>
                     )}
                   </div>
                 </article>

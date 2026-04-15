@@ -1,8 +1,8 @@
+@use "./styles/blog.scss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "./styles/blog.scss";
 
 /* Pixel-perfect rendering for game asset images (16×16 pixel art) */
 .pixel-art,
@@ -13,7 +13,7 @@ img.pixel-art {
 
 @layer base {
   body {
-    @apply bg-stardew-bg text-stardew-brown antialiased font-sans;
+    @apply bg-stardew-card text-stardew-brown antialiased font-sans;
   }
 
   a {
@@ -35,7 +35,7 @@ img.pixel-art {
 
   @keyframes birdFly {
     0% {
-      left: 50%;
+      left: 110%;
       opacity: 1;
     }
     85% {
@@ -46,7 +46,7 @@ img.pixel-art {
       opacity: 0;
     }
     100% {
-      left: 50%;
+      left: 110%;
       opacity: 0;
     }
   }

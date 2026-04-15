@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import authApi from "../../api/authApi";
 import { Button } from "../../components/ui/button";
@@ -15,8 +15,149 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 function AdminLayout() {
+  const HEARTBEAT_VISIBLE_INTERVAL_MS = 15000;
+  const HEARTBEAT_HIDDEN_INTERVAL_MS = 15000;
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const kickedRef = useRef(false);
+  const closeLogoutSentRef = useRef(false);
+
+  const forceKickToLogin = () => {
+    if (kickedRef.current) return;
+    kickedRef.current = true;
+
+    localStorage.removeItem("auth");
+    localStorage.removeItem("isAdminLoggedIn");
+    navigate("/admin/login", { replace: true });
+  };
+
+  useEffect(() => {
+    let disposed = false;
+    let heartbeatTimer: number | null = null;
+
+    const isUnauthorizedError = (err: any) => {
+      const status = err?.response?.status;
+      const code = err?.response?.data?.statusCode;
+      return status === 401 || code === 401;
+    };
+
+    const getHeartbeatInterval = () => {
+      return document.visibilityState === "visible"
+        ? HEARTBEAT_VISIBLE_INTERVAL_MS
+        : HEARTBEAT_HIDDEN_INTERVAL_MS;
+    };
+
+    const checkSession = async () => {
+      try {
+        await authApi.adminCheck();
+      } catch (err: any) {
+        if (disposed) return;
+        if (isUnauthorizedError(err)) {
+          forceKickToLogin();
+        }
+      }
+    };
+
+    const sendHeartbeat = async () => {
+      try {
+        await authApi.heartbeat({ clientUnixMs: Date.now() });
+      } catch (err: any) {
+        if (disposed) return;
+        if (isUnauthorizedError(err)) {
+          forceKickToLogin();
+        }
+      }
+    };
+
+    const scheduleHeartbeat = () => {
+      if (disposed) return;
+      if (heartbeatTimer !== null) {
+        window.clearTimeout(heartbeatTimer);
+      }
+
+      heartbeatTimer = window.setTimeout(async () => {
+        await sendHeartbeat();
+        scheduleHeartbeat();
+      }, getHeartbeatInterval());
+    };
+
+    const sendCloseLogout = () => {
+      if (closeLogoutSentRef.current) return;
+      closeLogoutSentRef.current = true;
+
+      const base = ((((import.meta as any).env?.VITE_API_BASE_URL as string) || "")).replace(/\/$/, "");
+      const endpoint = base ? `${base}/auth/logout` : "/auth/logout";
+
+      let accessToken = "";
+      try {
+        const raw = localStorage.getItem("auth");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          accessToken = parsed?.access_token || "";
+        }
+      } catch {
+        // Ignore parse error and try cookie-only logout.
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      try {
+        void fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: "{}",
+          credentials: "include",
+          keepalive: true,
+        });
+      } catch {
+        // Best effort only during page teardown.
+      }
+    };
+
+    void checkSession();
+    void sendHeartbeat();
+    scheduleHeartbeat();
+
+    const onFocus = () => {
+      void checkSession();
+      void sendHeartbeat();
+    };
+
+    const onVisibilityChange = () => {
+      void sendHeartbeat();
+      scheduleHeartbeat();
+    };
+
+    const onPageHide = () => {
+      sendCloseLogout();
+    };
+
+    const onBeforeUnload = () => {
+      sendCloseLogout();
+    };
+
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("beforeunload", onBeforeUnload);
+
+    return () => {
+      disposed = true;
+      if (heartbeatTimer !== null) {
+        window.clearTimeout(heartbeatTimer);
+      }
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+  }, [navigate]);
 
   const auth = useMemo<AdminAuth>(() => {
     const raw = localStorage.getItem("auth");
@@ -197,9 +338,7 @@ function AdminLayout() {
     } catch (err) {
       console.error("Logout failed", err);
     } finally {
-      localStorage.removeItem("auth");
-      localStorage.removeItem("isAdminLoggedIn");
-      navigate("/admin/login", { replace: true });
+      forceKickToLogin();
       setMobileNavOpen(false);
     }
   };

@@ -1,45 +1,35 @@
-@media (min-width: 768px) {
-  .blog-page-bg {
-    background-color: #2f97e3;
-    background-image: url("/img/stardewbackground.png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center top;
-  }
+.blog-page-bg {
+  background-color: #e9f2df;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255, 247, 222, 0.42), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(145, 178, 122, 0.3), transparent 35%),
+    url("/img/background.png");
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: auto, auto, cover;
+  background-position: left top, right top, center top;
+}
 
-  .blog-article-frame {
-    /* Inner paper background + wood-like border */
-    background:
-      /* paper */
-      linear-gradient(#fdf1b4, #f8e39e) padding-box,
-      /* subtle wood grain */
-        repeating-linear-gradient(
-          -45deg,
-          #8a4a1f,
-          #8a4a1f 4px,
-          #7a3f1a 4px,
-          #7a3f1a 7px
-        ),
-      /* outer highlight/shadow */ linear-gradient(to bottom, #c9893b, #5a2a10)
-        border-box;
-    background-origin: padding-box, border-box, border-box;
-    background-clip: padding-box, border-box, border-box;
-    border: 14px solid transparent;
-    border-radius: 18px;
-    box-shadow:
-      0 4px 0 #4b230c,
-      0 0 0 2px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-  }
+.blog-article-frame {
+  background:
+    linear-gradient(180deg, rgba(255, 251, 235, 0.98), rgba(246, 240, 219, 0.98)) padding-box,
+    linear-gradient(180deg, #9fb285, #6d8658) border-box;
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  box-shadow:
+    0 10px 26px rgba(60, 84, 44, 0.14),
+    0 3px 0 rgba(130, 149, 104, 0.8);
+  overflow: hidden;
+}
 
-  .blog-article-content {
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-  }
+.blog-article-content {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
 
-  .blog-article-content iframe,
-  .blog-article-content img {
-    max-width: 100%;
-    display: block;
-  }
+.blog-article-content iframe,
+.blog-article-content img {
+  max-width: 100%;
+  display: block;
 }

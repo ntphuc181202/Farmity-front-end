@@ -18,6 +18,11 @@ const authApi = {
     return axiosClient.get("/auth/admin-check");
   },
 
+  // Session heartbeat: POST /player-data/heartbeat
+  heartbeat: (payload = {}) => {
+    return axiosClient.post("/player-data/heartbeat", payload);
+  },
+
   // Đăng xuất admin: POST /auth/logout
   logout: () => {
     return axiosClient.post("/auth/logout");

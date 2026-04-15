@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import newsApi from "../../../api/newsApi";
 import { useNavigate } from "react-router-dom";
 import he from "he";
+import useAutoRefresh from "../../../hooks/useAutoRefresh";
 
 interface NewsItem {
   _id?: string;
@@ -17,26 +18,43 @@ function NewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const base = import.meta.env.BASE_URL || "/";
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const res = await newsApi.getAllNews();
-        setNews(res.data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load news.");
-      } finally {
+  const fetchNews = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
+
+    try {
+      const res = await newsApi.getAllNews();
+      setNews(res.data || []);
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load news.");
+    } finally {
+      if (isInitial) {
         setLoading(false);
       }
-    };
-
-    fetchNews();
+    }
   }, []);
+
+  useEffect(() => {
+    void fetchNews(true);
+  }, [fetchNews]);
+
+  useAutoRefresh(fetchNews, 12000);
 
   return (
     <div className="blog-page-bg min-h-screen py-4">
       <div className="max-w-[900px] mx-auto px-4">
+        <header className="mb-10 flex flex-col items-center justify-center gap-2">
+          <img
+            src={`${base}img/news.png`}
+            alt="News artwork"
+            className="w-full max-w-[440px] h-auto object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.28)]"
+          />
+        </header>
 
         {loading && <p className="text-center text-[#fdf6b3]">Loading news...</p>}
 

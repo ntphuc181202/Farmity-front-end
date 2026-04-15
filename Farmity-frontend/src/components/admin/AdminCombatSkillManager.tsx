@@ -13,6 +13,11 @@ interface CombatSkillDoc {
   skillDescription?: string;
   ownership?: string;
   category?: string;
+  buffSubCategory?: string;
+  buffValue?: number;
+  buffDuration?: number;
+  buffTickInterval?: number;
+  unlockLevel?: number;
   requiredWeaponType?: number | "";
   cooldown?: number;
   diceTier?: string;
@@ -20,6 +25,9 @@ interface CombatSkillDoc {
   projectileSpeed?: number;
   projectileRange?: number;
   projectileKnockback?: number;
+  aoeCastRange?: number;
+  aoeRadius?: number;
+  aoeVfxDuration?: number;
   skillVisualConfigId?: string;
   slashVfxDuration?: number;
   slashVfxSpawnOffset?: number;
@@ -38,12 +46,14 @@ interface CombatCatalogDoc {
 interface CatalogEnums {
   ownership: string[];
   category: string[];
+  buffSubCategory: string[];
   diceTier: string[];
 }
 
 const FALLBACK_ENUMS: CatalogEnums = {
   ownership: ["PlayerSkill", "WeaponSkill"],
   category: ["None", "Projectile", "Slash", "AoE", "Buff", "Summon"],
+  buffSubCategory: ["None", "InstantHeal", "HealOverTime", "StaminaRegen", "MoveSpeedPercent"],
   diceTier: ["D6", "D8", "D10", "D12", "D20"],
 };
 
@@ -60,6 +70,11 @@ const EMPTY_SKILL: CombatSkillDoc = {
   skillDescription: "",
   ownership: "PlayerSkill",
   category: "None",
+  buffSubCategory: "None",
+  buffValue: 0,
+  buffDuration: 0,
+  buffTickInterval: 0,
+  unlockLevel: 1,
   requiredWeaponType: "",
   cooldown: 0,
   diceTier: "D6",
@@ -67,6 +82,9 @@ const EMPTY_SKILL: CombatSkillDoc = {
   projectileSpeed: 0,
   projectileRange: 0,
   projectileKnockback: 0,
+  aoeCastRange: 0,
+  aoeRadius: 0,
+  aoeVfxDuration: 0,
   skillVisualConfigId: "",
   slashVfxDuration: 0,
   slashVfxSpawnOffset: 0,
@@ -110,6 +128,7 @@ function AdminCombatSkillManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<CombatSkillDoc>({ ...EMPTY_SKILL });
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState("");
@@ -140,6 +159,7 @@ function AdminCombatSkillManager() {
         setCatalogEnums({
           ownership: nextEnums.ownership || FALLBACK_ENUMS.ownership,
           category: nextEnums.category || FALLBACK_ENUMS.category,
+          buffSubCategory: nextEnums.buffSubCategory || FALLBACK_ENUMS.buffSubCategory,
           diceTier: nextEnums.diceTier || FALLBACK_ENUMS.diceTier,
         });
       }
@@ -169,10 +189,12 @@ function AdminCombatSkillManager() {
     setIconFile(null);
     setIconPreview("");
     setEditingSkillId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -181,6 +203,7 @@ function AdminCombatSkillManager() {
     setIconFile(null);
     setIconPreview(skill.iconUrl || "");
     setEditingSkillId(skill.skillId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -212,11 +235,11 @@ function AdminCombatSkillManager() {
       return;
     }
 
-    if (!editingSkillId && !(form.skillVisualConfigId || "").trim()) {
+    if (form.unlockLevel !== undefined && form.unlockLevel !== null && Number(form.unlockLevel) < 1) {
       Swal.fire({
         icon: "warning",
-        title: "Skill Visual Config is required for new combat skills",
-        text: "Create/select a combat catalog entry with type skill_vfx.",
+        title: "Unlock Level must be at least 1",
+        text: "Skills become visible from unlockLevel >= 1.",
         background: "#020617",
         color: "#e5e7eb",
       });
@@ -225,6 +248,13 @@ function AdminCombatSkillManager() {
 
     const normalizedForm: CombatSkillDoc = {
       ...form,
+      buffSubCategory: (form.category || "None") === "Buff" ? form.buffSubCategory || "None" : "None",
+      buffValue: (form.category || "None") === "Buff" ? Number(form.buffValue ?? 0) : 0,
+      buffDuration: (form.category || "None") === "Buff" ? Number(form.buffDuration ?? 0) : 0,
+      buffTickInterval: (form.category || "None") === "Buff" ? Number(form.buffTickInterval ?? 0) : 0,
+      aoeCastRange: (form.category || "None") === "AoE" ? Number(form.aoeCastRange ?? 0) : 0,
+      aoeRadius: (form.category || "None") === "AoE" ? Number(form.aoeRadius ?? 0) : 0,
+      aoeVfxDuration: (form.category || "None") === "AoE" ? Number(form.aoeVfxDuration ?? 0) : 0,
       requiredWeaponType: (form.ownership || "PlayerSkill") === "PlayerSkill" ? 0 : form.requiredWeaponType,
     };
 
@@ -300,7 +330,9 @@ function AdminCombatSkillManager() {
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const showProjectile = form.category === "Projectile";
+  const showAoE = form.category === "AoE";
   const showSlash = form.category === "Slash";
+  const showBuff = form.category === "Buff";
 
   return (
     <div className="space-y-6">
@@ -370,12 +402,12 @@ function AdminCombatSkillManager() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-white truncate">{skill.skillName}</p>
                 <p className="text-slate-400 text-xs truncate">
-                  {skill.skillId} · {skill.ownership || "-"} · {skill.category || "-"}
+                  {skill.skillId} · {skill.ownership || "-"} · {skill.category || "-"} · unlock L{Number(skill.unlockLevel ?? 1)}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={() => openEdit(skill)}>
-                  Edit
+                  Detail
                 </Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(skill.skillId)}>
                   Delete
@@ -402,11 +434,12 @@ function AdminCombatSkillManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-4xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingSkillId ? `Edit - ${editingSkillId}` : "Create New Combat Skill"}</CardTitle>
+              <CardTitle>{editingSkillId ? `${isDetailMode ? "Detail" : "Edit"} - ${editingSkillId}` : "Create New Combat Skill"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingSkillId && isDetailMode} className="space-y-5">
                 <section className="space-y-3">
                   <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">Base Fields</h3>
                   <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
@@ -464,7 +497,21 @@ function AdminCombatSkillManager() {
                     <Field label="Category">
                       <select
                         value={form.category || "None"}
-                        onChange={(e) => set("category", e.target.value)}
+                        onChange={(e) => {
+                          const nextCategory = e.target.value;
+                          set("category", nextCategory);
+                          if (nextCategory !== "Buff") {
+                            set("buffSubCategory", "None");
+                            set("buffValue", 0);
+                            set("buffDuration", 0);
+                            set("buffTickInterval", 0);
+                          }
+                          if (nextCategory !== "AoE") {
+                            set("aoeCastRange", 0);
+                            set("aoeRadius", 0);
+                            set("aoeVfxDuration", 0);
+                          }
+                        }}
                         className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
                       >
                         {catalogEnums.category.map((c) => (
@@ -476,6 +523,9 @@ function AdminCombatSkillManager() {
                     </Field>
                     <Field label="Cooldown (s)">
                       <Input type="number" value={form.cooldown ?? 0} onChange={(e) => setNum("cooldown", e.target.value)} min={0} step="0.01" />
+                    </Field>
+                    <Field label="Unlock Level">
+                      <Input type="number" value={form.unlockLevel ?? 1} onChange={(e) => setNum("unlockLevel", e.target.value)} min={1} step="1" />
                     </Field>
                     <Field label="Dice Tier">
                       <select
@@ -545,6 +595,53 @@ function AdminCombatSkillManager() {
                   </section>
                 )}
 
+                {showBuff && (
+                  <section className="space-y-3 pt-2 border-slate-800 border-t">
+                    <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">Buff Fields</h3>
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+                      <Field label="Buff Sub Category">
+                        <select
+                          value={form.buffSubCategory || "None"}
+                          onChange={(e) => set("buffSubCategory", e.target.value)}
+                          className="flex bg-slate-900 px-3 py-1 border border-slate-700 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 w-full h-9 text-slate-50 text-sm"
+                        >
+                          {catalogEnums.buffSubCategory.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Buff Value">
+                        <Input type="number" value={form.buffValue ?? 0} onChange={(e) => setNum("buffValue", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="Buff Duration (s)">
+                        <Input type="number" min={0} value={form.buffDuration ?? 0} onChange={(e) => setNum("buffDuration", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="Buff Tick Interval (s)">
+                        <Input type="number" min={0} value={form.buffTickInterval ?? 0} onChange={(e) => setNum("buffTickInterval", e.target.value)} step="0.01" />
+                      </Field>
+                    </div>
+                  </section>
+                )}
+
+                {showAoE && (
+                  <section className="space-y-3 pt-2 border-slate-800 border-t">
+                    <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">AoE Fields</h3>
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-3">
+                      <Field label="AoE Cast Range">
+                        <Input type="number" min={0} value={form.aoeCastRange ?? 0} onChange={(e) => setNum("aoeCastRange", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="AoE Radius">
+                        <Input type="number" min={0} value={form.aoeRadius ?? 0} onChange={(e) => setNum("aoeRadius", e.target.value)} step="0.01" />
+                      </Field>
+                      <Field label="AoE VFX Duration (s)">
+                        <Input type="number" min={0} value={form.aoeVfxDuration ?? 0} onChange={(e) => setNum("aoeVfxDuration", e.target.value)} step="0.01" />
+                      </Field>
+                    </div>
+                  </section>
+                )}
+
                 {showSlash && (
                   <section className="space-y-3 pt-2 border-slate-800 border-t">
                     <h3 className="font-semibold text-amber-400 text-sm uppercase tracking-wider">Slash Fields</h3>
@@ -569,6 +666,7 @@ function AdminCombatSkillManager() {
                     </div>
                   </section>
                 )}
+                </fieldset>
               </form>
             </div>
 
@@ -583,7 +681,12 @@ function AdminCombatSkillManager() {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingSkillId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingSkillId && isDetailMode)}>
                 {loading ? "Saving..." : editingSkillId ? "Save Changes" : "Create Skill"}
               </Button>
             </div>

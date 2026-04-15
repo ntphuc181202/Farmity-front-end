@@ -41,6 +41,14 @@ const FEATURES = [
   },
 ] as const;
 
+const DUCK_FLOCK = [
+  { top: "45%", size: 82, delay: "0s", duration: "14s", opacity: 0.95 },
+  { top: "52%", size: 96, delay: "-3.5s", duration: "16s", opacity: 1 },
+  { top: "39%", size: 74, delay: "-7s", duration: "13s", opacity: 0.88 },
+  { top: "58%", size: 88, delay: "-10.5s", duration: "17s", opacity: 0.92 },
+  { top: "48%", size: 68, delay: "-12s", duration: "12.5s", opacity: 0.8 },
+] as const;
+
 function HomePage() {
   const [slide, setSlide] = useState(0);
   const [parallaxY, setParallaxY] = useState(0);
@@ -67,7 +75,7 @@ function HomePage() {
   const base = import.meta.env.BASE_URL;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-stardew-bg overflow-hidden">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-[#f3f1e6] overflow-hidden">
       <section className="relative min-h-[115vh] overflow-hidden" ref={heroRef}>
         {/* Background */}
         <div
@@ -77,40 +85,64 @@ function HomePage() {
           }}
         >
           <img
-            src={`${base}img/stardewbackground.png`}
+            src={`${base}img/background.png`}
             alt=""
             aria-hidden
-            className="w-full h-[100%] object-cover object-bottom"
+            className="w-full h-[120%] object-cover object-bottom"
             style={{
               transform: "translateY(-22%)",
             }}
           />
         </div>
 
-        {/* Cloud */}
+        {/* Cloud layers */}
         <img
           src={`${base}img/cloud.png`}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute top-20 left-[-300px] w-[900px] opacity-25 z-[1] animate-cloud"
+          className="pointer-events-none absolute top-12 left-[-420px] w-[1200px] opacity-30 z-[1] animate-cloud"
         />
-
-        {/* Bird */}
         <img
-          src={`${base}img/stardew_bird.gif`}
+          src={`${base}img/cloud.png`}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute top-[55%] left-1/2 w-[100px] -translate-y-1/2 z-[2] animate-bird"
+          className="pointer-events-none absolute top-28 left-[-520px] w-[1100px] opacity-20 z-[1] animate-cloud"
+          style={{ animationDelay: "-18s", animationDuration: "95s" }}
         />
+        <img
+          src={`${base}img/cloud.png`}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute top-44 left-[-460px] w-[980px] opacity-25 z-[1] animate-cloud"
+          style={{ animationDelay: "-35s", animationDuration: "105s" }}
+        />
+
+        {/* Duck flock */}
+        {DUCK_FLOCK.map((duck, index) => (
+          <img
+            key={`${duck.top}-${index}`}
+            src={`${base}img/bird.gif`}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute left-[110%] -translate-y-1/2 z-[2] animate-bird"
+            style={{
+              top: duck.top,
+              width: `${duck.size}px`,
+              animationDelay: duck.delay,
+              animationDuration: duck.duration,
+              opacity: duck.opacity,
+            }}
+          />
+        ))}
 
         {/* Overlay Content */}
         <div className="relative z-10 flex flex-col min-h-[115vh]">
           {/* Logo */}
-          <div className="flex-1 flex items-center justify-center pt-20 sm:pt-24 md:pt-28">
+          <div className="flex-1 flex items-center justify-center pt-4 sm:pt-5 md:pt-6">
             <img
-              src={`${base}img/logo.png`}
-              alt="Stardewvalley"
-              className="h-28 sm:h-36 md:h-48 lg:h-56 xl:h-64 w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
+              src={`${base}img/herologo.png`}
+              alt="Farmity"
+              className="h-44 sm:h-60 md:h-72 lg:h-88 xl:h-96 w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
             />
           </div>
 
@@ -125,13 +157,13 @@ function HomePage() {
         </div>
       </section>
 
-      <div className="bg-[#fef6ad]">
+      <div className="bg-gradient-to-b from-[#f5efd7] to-[#ece2bf]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8 sm:space-y-10">
           <section className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0d5e9c] mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#315f3f] mb-2">
               You&apos;re moving to the Valley...
             </h2>
-            <p className="text-[0.98rem] sm:text-base text-stardew-brown-soft leading-relaxed">
+            <p className="text-[0.98rem] sm:text-base text-[#5d4a33] leading-relaxed">
               You&apos;ve inherited your grandfather&apos;s old farm plot in
               Stardew Valley. Armed with hand-me-down tools and a few coins, you
               set out to begin your new life!
@@ -139,8 +171,8 @@ function HomePage() {
           </section>
 
           <section>
-            <div className="rounded-lg overflow-hidden mb-4 max-w-2xl mx-auto relative">
-              <div className="relative aspect-[4/3] sm:aspect-video bg-stardew-green-dark/10">
+            <div className="rounded-2xl overflow-hidden mb-4 max-w-2xl mx-auto relative shadow-[0_14px_28px_rgba(60,84,44,0.2)] border border-[#a6ba90]">
+              <div className="relative aspect-[4/3] sm:aspect-video bg-[#5f7f4e]/10">
                 <img
                   src={`${base}img/${FEATURE_IMAGES[slide]}`}
                   alt={`Feature ${slide + 1}: ${FEATURES[slide].title}`}
@@ -192,13 +224,13 @@ function HomePage() {
                 </svg>
               </button>
             </div>
-            <h3 className="text-xl font-bold text-[#0d5e9c] mb-3 text-center mt-6">
+            <h3 className="text-xl font-bold text-[#315f3f] mb-3 text-center mt-6">
               Features
             </h3>
-            <ul className="space-y-1.5 text-[0.98rem] text-stardew-brown-soft leading-relaxed">
+            <ul className="space-y-1.5 text-[0.98rem] text-[#5d4a33] leading-relaxed">
               {FEATURES.map((item) => (
                 <li key={item.title}>
-                  <span className="font-semibold text-[#0d5e9c]">
+                  <span className="font-semibold text-[#315f3f]">
                     {item.title}:
                   </span>{" "}
                   {item.desc}
@@ -221,19 +253,19 @@ function HomePage() {
               ].map((store) => (
                 <span
                   key={store}
-                  className="px-2.5 py-1 rounded text-xs sm:text-sm font-medium text-stardew-brown-soft"
+                  className="px-2.5 py-1 rounded text-xs sm:text-sm font-medium text-[#5d4a33]"
                 >
                   {store}
                 </span>
               ))}
             </div>
-            <p className="text-[0.75rem] text-stardew-brown-soft">
+            <p className="text-[0.75rem] text-[#6f5d3f]">
               This is a fanmade landing page inspired by{" "}
               <a
                 href="https://www.Stardewvalley.net/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#0d5e9c] underline"
+                className="text-[#315f3f] underline"
               >
                 Stardew Valley
               </a>

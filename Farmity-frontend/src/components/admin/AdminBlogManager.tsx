@@ -20,6 +20,7 @@ function AdminBlogManager() {
   const [loading, setLoading] = useState(false);
   const [blogs, setBlogs] = useState<BlogItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -29,6 +30,7 @@ function AdminBlogManager() {
     setTitle("");
     setContent("");
     setEditingId(null);
+    setIsDetailMode(false);
     setMessage("");
   };
 
@@ -107,6 +109,7 @@ function AdminBlogManager() {
     setTitle(blog.title || "");
     setContent(blog.content || "");
     setEditingId(blog._id || blog.id || null);
+    setIsDetailMode(true);
     setMessage("");
     setIsModalOpen(true);
   };
@@ -233,12 +236,10 @@ function AdminBlogManager() {
                     <div className="flex items-center gap-2 shrink-0">
                       <Button
                         type="button"
-                        variant="outline"
                         size="sm"
-                        className="h-7 px-3 text-[11px] rounded-full border-slate-400/70 text-white hover:bg-slate-800"
                         onClick={() => handleEdit(blog)}
                       >
-                        Edit
+                        Detail
                       </Button>
                       <Button
                         type="button"
@@ -297,7 +298,7 @@ function AdminBlogManager() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base font-semibold text-slate-50">
-                      {editingId ? "Edit post" : "Create new post"}
+                      {editingId ? (isDetailMode ? "Post detail" : "Edit post") : "Create new post"}
                     </CardTitle>
                   </div>
                   <Button
@@ -316,6 +317,7 @@ function AdminBlogManager() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <fieldset disabled={!!editingId && isDetailMode} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="block text-sm font-medium text-slate-200">
                       Title
@@ -336,7 +338,12 @@ function AdminBlogManager() {
                       <Editor
                         tinymceScriptSrc="/tinymce/js/tinymce/tinymce.min.js"
                         value={content}
-                        onEditorChange={(newValue) => setContent(newValue)}
+                        onEditorChange={(newValue) => {
+                          if (!editingId || !isDetailMode) {
+                            setContent(newValue);
+                          }
+                        }}
+                        disabled={!!editingId && isDetailMode}
                         init={{
                           license_key: "gpl",
                           height: 500,
@@ -394,10 +401,12 @@ function AdminBlogManager() {
 
                           skin: "oxide-dark",
                           content_css: "dark",
+                          readonly: !!editingId && isDetailMode,
                         }}
                       />
                     </div>
                   </div>
+                  </fieldset>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     {message && (
@@ -415,7 +424,12 @@ function AdminBlogManager() {
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={loading}>
+                      {editingId && isDetailMode && (
+                        <Button type="button" className="border-slate-700 text-white hover:bg-slate-800" onClick={() => setIsDetailMode(false)}>
+                          Edit
+                        </Button>
+                      )}
+                      <Button type="submit" disabled={loading || (!!editingId && isDetailMode)}>
                         {loading
                           ? editingId
                             ? "Updating..."

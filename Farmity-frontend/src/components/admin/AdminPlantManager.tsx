@@ -149,6 +149,7 @@ function AdminPlantManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlantId, setEditingPlantId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<PlantDoc>({ ...EMPTY, growthStages: [{ stageNum: 0, growthDurationMinutes: 0 }] });
   const [stageFiles, setStageFiles] = useState<(File | null)[]>([null]);
   const [hybridFlowerFile, setHybridFlowerFile] = useState<File | null>(null);
@@ -188,9 +189,10 @@ function AdminPlantManager() {
     setHybridFlowerFile(null);
     setHybridMatureFile(null);
     setEditingPlantId(null);
+    setIsDetailMode(false);
   };
 
-  const openCreate = () => { resetForm(); setIsModalOpen(true); };
+  const openCreate = () => { resetForm(); setIsDetailMode(false); setIsModalOpen(true); };
 
   const openEdit = (plant: PlantDoc) => {
     setForm({ ...plant, growthStages: plant.growthStages?.map((s) => ({ ...s })) || [{ stageNum: 0, growthDurationMinutes: 0 }] });
@@ -198,6 +200,7 @@ function AdminPlantManager() {
     setHybridFlowerFile(null);
     setHybridMatureFile(null);
     setEditingPlantId(plant.plantId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -435,7 +438,7 @@ function AdminPlantManager() {
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <Button size="sm" onClick={() => openEdit(plant)}>Edit</Button>
+                  <Button size="sm" onClick={() => openEdit(plant)}>Detail</Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(plant.plantId)}>Delete</Button>
                 </div>
               </div>
@@ -458,11 +461,12 @@ function AdminPlantManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-3xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingPlantId ? `Edit — ${editingPlantId}` : "Create New Plant"}</CardTitle>
+              <CardTitle>{editingPlantId ? `${isDetailMode ? "Detail" : "Edit"} — ${editingPlantId}` : "Create New Plant"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingPlantId && isDetailMode} className="space-y-5">
 
                 {/* ─── Basic Info ─── */}
                 <section className="space-y-3">
@@ -585,6 +589,7 @@ function AdminPlantManager() {
                     </div>
                   ))}
                 </section>
+                </fieldset>
 
               </form>
             </div>
@@ -592,7 +597,12 @@ function AdminPlantManager() {
             {/* Footer */}
             <div className="flex justify-end gap-2 p-4 border-slate-800 border-t shrink-0">
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingPlantId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingPlantId && isDetailMode)}>
                 {loading ? "Saving…" : editingPlantId ? "Save Changes" : "Create Plant"}
               </Button>
             </div>

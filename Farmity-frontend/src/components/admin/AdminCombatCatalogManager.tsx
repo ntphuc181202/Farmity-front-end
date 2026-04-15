@@ -39,6 +39,7 @@ function AdminCombatCatalogManager() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
+  const [isDetailMode, setIsDetailMode] = useState(false);
   const [form, setForm] = useState<CombatCatalogDoc>({ ...EMPTY });
   const [loading, setLoading] = useState(false);
 
@@ -58,10 +59,12 @@ function AdminCombatCatalogManager() {
   const resetForm = () => {
     setForm({ ...EMPTY });
     setEditingConfigId(null);
+    setIsDetailMode(false);
   };
 
   const openCreate = () => {
     resetForm();
+    setIsDetailMode(false);
     setIsModalOpen(true);
   };
 
@@ -76,6 +79,7 @@ function AdminCombatCatalogManager() {
       tintAlpha: Number(entry.tintAlpha ?? 1),
     });
     setEditingConfigId(entry.configId);
+    setIsDetailMode(true);
     setIsModalOpen(true);
   };
 
@@ -135,20 +139,20 @@ function AdminCombatCatalogManager() {
 
       if (editingConfigId) {
         await combatCatalogApi.updateCombatCatalog(editingConfigId, payload);
-        Swal.fire({ toast: true, icon: "success", title: "Combat config updated", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
+        Swal.fire({ toast: true, icon: "success", title: "Skill visual updated", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
       } else {
         await combatCatalogApi.createCombatCatalog({
           configId: form.configId.trim(),
           ...payload,
         });
-        Swal.fire({ toast: true, icon: "success", title: "Combat config created", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
+        Swal.fire({ toast: true, icon: "success", title: "Skill visual created", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
       }
 
       resetForm();
       setIsModalOpen(false);
       await fetchEntries();
     } catch (error: any) {
-      const msg = error?.response?.data?.message || "Failed to save combat config.";
+      const msg = error?.response?.data?.message || "Failed to save skill visual.";
       Swal.fire({ icon: "error", title: "Error", text: msg, background: "#020617", color: "#e5e7eb" });
     } finally {
       setLoading(false);
@@ -157,7 +161,7 @@ function AdminCombatCatalogManager() {
 
   const handleDelete = async (configId: string) => {
     const result = await Swal.fire({
-      title: "Delete this combat config?",
+      title: "Delete this skill visual?",
       text: `Config "${configId}" will be permanently removed.`,
       icon: "warning",
       showCancelButton: true,
@@ -172,10 +176,10 @@ function AdminCombatCatalogManager() {
     try {
       await combatCatalogApi.deleteCombatCatalog(configId);
       setEntries((prev) => prev.filter((s) => s.configId !== configId));
-      Swal.fire({ toast: true, icon: "success", title: "Combat config deleted", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
+      Swal.fire({ toast: true, icon: "success", title: "Skill visual deleted", position: "top-end", showConfirmButton: false, timer: 2000, background: "#020617", color: "#e5e7eb" });
     } catch (err) {
       console.error(err);
-      Swal.fire({ icon: "error", title: "Error", text: "Failed to delete combat config.", background: "#020617", color: "#e5e7eb" });
+      Swal.fire({ icon: "error", title: "Error", text: "Failed to delete skill visual.", background: "#020617", color: "#e5e7eb" });
     }
   };
 
@@ -196,10 +200,10 @@ function AdminCombatCatalogManager() {
     <div className="space-y-6">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="font-semibold text-white text-2xl">Combat Configs</h1>
+          <h1 className="font-semibold text-white text-2xl">Skill Visual</h1>
           <p className="mt-0.5 text-slate-400 text-sm">{entries.length} entries total</p>
         </div>
-        <Button onClick={openCreate}>+ New Combat Config</Button>
+        <Button onClick={openCreate}>+ New Skill Visual</Button>
       </header>
 
       <Card>
@@ -219,7 +223,7 @@ function AdminCombatCatalogManager() {
 
         <CardContent className="divide-y divide-slate-800">
           {visible.length === 0 && (
-            <p className="py-8 text-slate-500 text-sm text-center">No combat configs found.</p>
+            <p className="py-8 text-slate-500 text-sm text-center">No skill visuals found.</p>
           )}
           {visible.map((entry) => (
             <div key={entry.configId} className="flex items-center gap-4 hover:bg-slate-800/40 px-6 py-3 transition-colors">
@@ -236,7 +240,7 @@ function AdminCombatCatalogManager() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={() => openEdit(entry)}>
-                  Edit
+                  Detail
                 </Button>
                 <Button size="sm" variant="destructive" onClick={() => handleDelete(entry.configId)}>
                   Delete
@@ -263,11 +267,12 @@ function AdminCombatCatalogManager() {
         <div className="z-50 fixed inset-0 flex justify-center items-start bg-black/70 p-4 overflow-y-auto">
           <Card className="flex flex-col bg-slate-950 my-8 border border-slate-800 w-full max-w-xl">
             <CardHeader className="border-slate-800 border-b shrink-0">
-              <CardTitle>{editingConfigId ? `Edit - ${editingConfigId}` : "Create New Combat Config"}</CardTitle>
+              <CardTitle>{editingConfigId ? `${isDetailMode ? "Detail" : "Edit"} - ${editingConfigId}` : "Create New Skill Visual"}</CardTitle>
             </CardHeader>
 
             <div className="flex-1 p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <fieldset disabled={!!editingConfigId && isDetailMode} className="space-y-5">
                 <section className="space-y-3">
                   <h3 className="font-semibold text-emerald-400 text-sm uppercase tracking-wider">Base Fields</h3>
                   <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
@@ -300,6 +305,7 @@ function AdminCombatCatalogManager() {
                     </Field>
                   </div>
                 </section>
+                </fieldset>
               </form>
             </div>
 
@@ -307,7 +313,12 @@ function AdminCombatCatalogManager() {
               <Button type="button" variant="outline" onClick={() => { setIsModalOpen(false); resetForm(); }}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              {editingConfigId && isDetailMode && (
+                <Button type="button" onClick={() => setIsDetailMode(false)}>
+                  Edit
+                </Button>
+              )}
+              <Button onClick={handleSubmit} disabled={loading || (!!editingConfigId && isDetailMode)}>
                 {loading ? "Saving..." : editingConfigId ? "Save Changes" : "Create Config"}
               </Button>
             </div>
