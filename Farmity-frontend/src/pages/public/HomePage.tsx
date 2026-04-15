@@ -138,11 +138,11 @@ function HomePage() {
         {/* Overlay Content */}
         <div className="relative z-10 flex flex-col min-h-[115vh]">
           {/* Logo */}
-          <div className="flex-1 flex items-center justify-center pt-4 sm:pt-5 md:pt-6">
+          <div className="flex-1 flex items-center justify-center pt-2 sm:pt-3 md:pt-4 -translate-y-2 sm:-translate-y-3">
             <img
               src={`${base}img/herologo.png`}
               alt="Farmity"
-              className="h-44 sm:h-60 md:h-72 lg:h-88 xl:h-96 w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
+              className="h-52 sm:h-68 md:h-80 lg:h-96 xl:h-[26rem] w-auto drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]"
             />
           </div>
 
